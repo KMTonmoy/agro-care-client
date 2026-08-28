@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
@@ -61,8 +61,11 @@ export const Navbar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -90,6 +93,18 @@ export const Navbar = () => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleToggleSearch = () => {
+    setIsSearchOpen((prev) => !prev);
+  };
+
+  const handleSearchSubmit = () => {
+    const query = searchQuery.trim();
+    if (!query) return;
+    router.push(`/shop?q=${encodeURIComponent(query)}`);
+    setIsSearchOpen(false);
+    setSearchQuery("");
   };
 
   const navbarVariants = {
@@ -135,7 +150,7 @@ export const Navbar = () => {
           )}
         >
           {/* Steam / Smoke / Water Background Effect */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
             <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-[#1D976C]/5 via-[#93F9B9]/3 to-transparent rounded-full blur-3xl animate-float" />
 
             <div
@@ -167,7 +182,33 @@ export const Navbar = () => {
             ))}
           </div>
 
-          <div className="relative px-4 sm:px-6 lg:px-8">
+          {/* Katana Shine Sweep */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
+            <motion.div
+              className="absolute top-0 left-0 h-full w-1/4 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/25 to-transparent"
+              initial={{ x: "-150%" }}
+              animate={{ x: "450%" }}
+              transition={{
+                duration: 1.1,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 4.5,
+              }}
+            />
+            <motion.div
+              className="absolute top-0 left-0 h-full w-[3px] -skew-x-[20deg] bg-white/60 blur-[1px]"
+              initial={{ x: "-150%" }}
+              animate={{ x: "450%" }}
+              transition={{
+                duration: 1.1,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatDelay: 4.5,
+              }}
+            />
+          </div>
+
+          <div className="relative px-4 sm:px-6 lg:px-8 z-10">
             <div className="flex items-center justify-between h-16 md:h-[72px] max-w-7xl mx-auto">
               {/* LEFT: LOGO */}
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -263,9 +304,37 @@ export const Navbar = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10"
+                    onClick={handleToggleSearch}
+                    className={cn(
+                      "rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10",
+                      isSearchOpen && "bg-[rgba(255,255,255,0.08)] text-[#93F9B9]",
+                    )}
                   >
-                    <Search className="w-5 h-5" />
+                    <AnimatePresence mode="wait" initial={false}>
+                      {isSearchOpen ? (
+                        <motion.span
+                          key="close"
+                          initial={{ opacity: 0, rotate: -90 }}
+                          animate={{ opacity: 1, rotate: 0 }}
+                          exit={{ opacity: 0, rotate: 90 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center justify-center"
+                        >
+                          <X className="w-5 h-5" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="search"
+                          initial={{ opacity: 0, rotate: 90 }}
+                          animate={{ opacity: 1, rotate: 0 }}
+                          exit={{ opacity: 0, rotate: -90 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center justify-center"
+                        >
+                          <Search className="w-5 h-5" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                     <span className="sr-only">Search</span>
                   </Button>
                 </motion.div>
@@ -496,6 +565,44 @@ export const Navbar = () => {
               </div>
             </div>
           </div>
+
+          {/* EXPANDABLE SEARCH BAR */}
+          <AnimatePresence>
+            {isSearchOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 overflow-hidden border-t border-[rgba(255,255,255,0.06)]"
+              >
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                  <div className="flex items-center gap-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 focus-within:border-[#1D976C]/50 transition-all duration-300">
+                    <Search className="w-4.5 h-4.5 text-[#93F9B9] shrink-0" />
+
+                    <input
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSearchSubmit();
+                      }}
+                      placeholder="Search for seeds, fertilizer, tools, machinery..."
+                      className="flex-1 bg-transparent text-sm md:text-base text-[#F1F5F2] placeholder:text-[#7D8983] outline-none"
+                    />
+
+                    <Button
+                      onClick={handleSearchSubmit}
+                      className="rounded-lg bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 px-4 text-sm shrink-0"
+                    >
+                      Search
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.header>
     </AnimatePresence>
