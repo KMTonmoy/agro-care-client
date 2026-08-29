@@ -34,7 +34,7 @@ export default function Testimonials() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-14 max-w-2xl text-center">
           <h2 className="text-3xl font-bold text-[#F1F5F2] sm:text-4xl">
-            Trusted by farmers who <span className="gradient-text">can't afford delays</span>
+            Trusted by farmers who <span className="gradient-text">cant afford delays</span>
           </h2>
           <p className="mt-3 text-sm text-[#87968F] sm:text-base">
             Real stories from growers using the platform this season.
