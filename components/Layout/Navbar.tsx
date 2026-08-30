@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -35,6 +35,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { AuthContext } from "@/AuthProvider/AuthProvider";
 
 const navLinks = [
   { name: "Home", href: "/", icon: Home },
@@ -62,6 +63,9 @@ export const Navbar = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user;
+  const logOut = authContext?.logOut;
 
   const pathname = usePathname();
   const router = useRouter();
@@ -104,6 +108,12 @@ export const Navbar = () => {
     router.push(`/shop?q=${encodeURIComponent(query)}`);
     setIsSearchOpen(false);
     setSearchQuery("");
+  };
+
+  const handleLogout = async () => {
+    if (logOut) {
+      await logOut();
+    }
   };
 
   const navbarVariants = {
@@ -359,80 +369,92 @@ export const Navbar = () => {
                   </Button>
                 </motion.div>
 
-                {/* PROFILE DROPDOWN */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-0.5 transition-all duration-300 outline-none">
-                    <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[#1D976C]/30 hover:ring-[#1D976C]/60 transition-all duration-300">
-                      <AvatarImage src="/avatar.jpg" alt="User" />
+                {/* PROFILE / AUTH BUTTONS */}
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-0.5 transition-all duration-300 outline-none">
+                      <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[#1D976C]/30 hover:ring-[#1D976C]/60 transition-all duration-300">
+                        <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                        <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold text-sm">
+                          {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
 
-                      <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold text-sm">
-                        FA
-                      </AvatarFallback>
-                    </Avatar>
-                  </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-64 p-2 rounded-2xl border border-[rgba(255,255,255,0.06)] shadow-2xl shadow-black/50 bg-[#111714]/95 backdrop-blur-2xl"
+                    >
+                      <div className="font-medium text-[#F1F5F2] px-3 py-2">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
+                            <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                            <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
+                              {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
 
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-64 p-2 rounded-2xl border border-[rgba(255,255,255,0.06)] shadow-2xl shadow-black/50 bg-[#111714]/95 backdrop-blur-2xl"
-                  >
-                    {/* PROFILE HEADER
-                        IMPORTANT:
-                        DropdownMenuLabel removed because Base UI
-                        requires Menu.Group context.
-                    */}
-                    <div className="font-medium text-[#F1F5F2] px-3 py-2">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
-                          <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
-                            FA
-                          </AvatarFallback>
-                        </Avatar>
-
-                        <div>
-                          <p className="font-semibold text-sm">Farmer Ahmed</p>
-
-                          <p className="text-xs text-[#7D8983]">
-                            Premium Member
-                          </p>
+                          <div>
+                            <p className="font-semibold text-sm truncate max-w-[140px]">
+                              {user?.displayName || user?.email || "User"}
+                            </p>
+                            <p className="text-xs text-[#7D8983] truncate max-w-[140px]">
+                              {user?.email || "Premium Member"}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
+                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                    {/* PROFILE */}
-                    <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                      <User className="mr-2 h-4 w-4 text-[#1D976C]" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
+                        <User className="mr-2 h-4 w-4 text-[#1D976C]" />
+                        <span>Profile</span>
+                      </DropdownMenuItem>
 
-                    {/* MY ORDERS */}
-                    <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                      <Package className="mr-2 h-4 w-4 text-[#1D976C]" />
-                      <span>My Orders</span>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
+                        <Package className="mr-2 h-4 w-4 text-[#1D976C]" />
+                        <span>My Orders</span>
+                      </DropdownMenuItem>
 
-                    {/* MY FARM */}
-                    <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                      <Leaf className="mr-2 h-4 w-4 text-[#1D976C]" />
-                      <span>My Farm</span>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
+                        <Leaf className="mr-2 h-4 w-4 text-[#1D976C]" />
+                        <span>My Farm</span>
+                      </DropdownMenuItem>
 
-                    {/* SETTINGS */}
-                    <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                      <Settings className="mr-2 h-4 w-4 text-[#1D976C]" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
+                        <Settings className="mr-2 h-4 w-4 text-[#1D976C]" />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
 
-                    <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
+                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                    {/* LOGOUT */}
-                    <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#B85C5C] hover:bg-[#B85C5C]/10 transition-all duration-200">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <DropdownMenuItem 
+                        onClick={handleLogout}
+                        className="cursor-pointer rounded-xl px-3 py-2.5 text-[#B85C5C] hover:bg-[#B85C5C]/10 transition-all duration-200"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <Link href="/login">
+                      <Button
+                        variant="ghost"
+                        className="rounded-xl border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 h-9 md:h-10 px-3 md:px-4 text-sm"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/register">
+                      <Button className="rounded-xl bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 md:h-10 px-3 md:px-4 text-sm shadow-lg shadow-[#1D976C]/30 hover:shadow-[#1D976C]/50 transition-all duration-300">
+                        Register
+                      </Button>
+                    </Link>
+                  </div>
+                )}
 
                 {/* MOBILE MENU */}
                 <Sheet
@@ -533,17 +555,48 @@ export const Navbar = () => {
 
                       {/* MOBILE FOOTER */}
                       <div className="p-6 border-t border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 space-y-3 relative z-10">
-                        <Button className="w-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold rounded-xl shadow-lg shadow-[#1D976C]/30 transition-all duration-300 h-12">
-                          <User className="w-4 h-4 mr-2" />
-                          Sign In
-                        </Button>
+                        {user ? (
+                          <>
+                            <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.04)]">
+                              <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
+                                <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                                <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
+                                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm text-[#F1F5F2] truncate">
+                                  {user?.displayName || user?.email || "User"}
+                                </p>
+                                <p className="text-xs text-[#7D8983] truncate">
+                                  {user?.email || "Premium Member"}
+                                </p>
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={handleLogout}
+                              className="w-full bg-[#B85C5C]/10 hover:bg-[#B85C5C]/20 text-[#B85C5C] font-medium rounded-xl transition-all duration-300 h-12 border border-[#B85C5C]/20"
+                            >
+                              <LogOut className="w-4 h-4 mr-2" />
+                              Logout
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Link href="/login" onClick={closeMobileMenu}>
+                              <Button className="w-full border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] font-medium rounded-xl transition-all duration-300 h-12">
+                                <User className="w-4 h-4 mr-2" />
+                                Sign In
+                              </Button>
+                            </Link>
 
-                        <Button
-                          variant="outline"
-                          className="w-full border border-[#1D976C]/30 text-[#A9B5AF] hover:bg-[#1D976C] hover:text-[#111714] font-medium rounded-xl transition-all duration-300 h-12"
-                        >
-                          Create Account
-                        </Button>
+                            <Link href="/register" onClick={closeMobileMenu}>
+                              <Button className="w-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold rounded-xl shadow-lg shadow-[#1D976C]/30 transition-all duration-300 h-12">
+                                Create Account
+                              </Button>
+                            </Link>
+                          </>
+                        )}
 
                         <div className="flex items-center justify-center gap-3 pt-2">
                           <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
