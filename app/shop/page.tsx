@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Search,
   Grid3x3,
@@ -19,6 +20,97 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Product } from "@/types/product.types";
+
+const fuzzySearch = (text: string, query: string): boolean => {
+  if (!query.trim()) return true;
+  
+  const normalizedText = text.toLowerCase().trim();
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  if (normalizedText.includes(normalizedQuery)) return true;
+  
+  const queryWords = normalizedQuery.split(/\s+/);
+  const textWords = normalizedText.split(/\s+/);
+  
+  const allWordsPresent = queryWords.every((qWord) => {
+    return textWords.some((tWord) => {
+      if (tWord.includes(qWord)) return true;
+      return levenshteinDistance(tWord, qWord) <= 2;
+    });
+  });
+  
+  if (allWordsPresent) return true;
+  
+  return textWords.some((tWord) => {
+    return queryWords.some((qWord) => {
+      return levenshteinDistance(tWord, qWord) <= 2;
+    });
+  });
+};
+
+const levenshteinDistance = (a: string, b: string): number => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  
+  const matrix = [];
+  
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b[i - 1] === a[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  
+  return matrix[b.length][a.length];
+};
+
+interface SearchInputProps {
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+}
+
+const SearchInput: React.FC<SearchInputProps> = ({ searchQuery, onSearchChange }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="relative flex-1 md:w-64">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52635B]" />
+      <input
+        type="text"
+        placeholder="Search products..."
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className="w-full rounded-xl border border-white/[0.08] bg-white/[0.035] py-2.5 pl-9 pr-4 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none backdrop-blur-xl transition-all focus:border-[#1D976C]/40 focus:ring-2 focus:ring-[#1D976C]/10"
+      />
+      {searchQuery && (
+        <button
+          type="button"
+          onClick={() => onSearchChange("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#52635B] hover:text-[#F1F5F2]"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </form>
+  );
+};
 
 const categories = [
   { name: "All", icon: ShoppingBag },
@@ -40,6 +132,9 @@ const sortOptions = [
 ];
 
 const Shop = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -52,6 +147,43 @@ const Shop = () => {
   const [showOrganicOnly, setShowOrganicOnly] = useState(false);
   const [showFreeDelivery, setShowFreeDelivery] = useState(false);
   const [showInStock, setShowInStock] = useState(true);
+  
+  const isFirstRender = useRef(true);
+  const hasSetInitialQuery = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !hasSetInitialQuery.current) {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q") || "";
+      if (q) {
+        setSearchQuery(q);
+      }
+      hasSetInitialQuery.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    const currentParams = new URLSearchParams(searchParams);
+    if (searchQuery) {
+      currentParams.set("q", searchQuery);
+    } else {
+      currentParams.delete("q");
+    }
+    const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
+    router.replace(newUrl, { scroll: false });
+  }, [searchQuery, router, searchParams]);
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null && q !== searchQuery && hasSetInitialQuery.current) {
+      setSearchQuery(q);
+    }
+  }, [searchParams, searchQuery]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -82,9 +214,9 @@ const Shop = () => {
       const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter(
         (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.category.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query)
+          fuzzySearch(p.name, query) ||
+          fuzzySearch(p.category, query) ||
+          fuzzySearch(p.description || "", query)
       );
     }
 
@@ -142,6 +274,26 @@ const Shop = () => {
     { top: "50%", left: "5%" },
   ];
 
+  const getSearchSuggestion = () => {
+    if (!searchQuery || filteredProducts.length > 0) return null;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const allProducts = [...products];
+    
+    const suggestions = allProducts
+      .filter((p) => {
+        const name = p.name.toLowerCase();
+        const desc = p.description?.toLowerCase() || "";
+        return fuzzySearch(name, query) || fuzzySearch(desc, query);
+      })
+      .slice(0, 3);
+    
+    if (suggestions.length > 0) {
+      return suggestions;
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <section className="relative min-h-screen py-24">
@@ -176,9 +328,10 @@ const Shop = () => {
     );
   }
 
+  const suggestions = getSearchSuggestion();
+
   return (
     <section className="relative min-h-screen py-24">
-      {/* Particle Effects Only - No Background Colors */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {particlePositions.map((pos, i) => (
           <motion.div
@@ -200,7 +353,6 @@ const Shop = () => {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -213,25 +365,19 @@ const Shop = () => {
               </h1>
               <p className="mt-2 text-sm text-[#87968F]">
                 {filteredProducts.length} products available
+                {searchQuery && ` for "${searchQuery}"`}
               </p>
             </div>
 
             <div className="flex w-full md:w-auto gap-2">
-              <div className="relative flex-1 md:w-64">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#52635B]" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.035] py-2.5 pl-9 pr-4 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none backdrop-blur-xl transition-all focus:border-[#1D976C]/40 focus:ring-2 focus:ring-[#1D976C]/10"
-                />
-              </div>
+              <SearchInput 
+                searchQuery={searchQuery} 
+                onSearchChange={setSearchQuery} 
+              />
             </div>
           </div>
         </div>
 
-        {/* Filters Bar - Glass effect only */}
         <div className="mb-8 flex flex-wrap items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.06)] bg-[#111714]/40 p-4 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.4)]">
           <div className="flex flex-1 flex-wrap gap-1.5">
             {categories.map((category) => {
@@ -307,7 +453,6 @@ const Shop = () => {
           </div>
         </div>
 
-        {/* Filter Panel - Glass effect only */}
         <AnimatePresence>
           {isFilterOpen && (
             <motion.div
@@ -401,16 +546,36 @@ const Shop = () => {
           )}
         </AnimatePresence>
 
-        {/* Products Grid - Always 3 columns */}
         {filteredProducts.length === 0 ? (
           <div className="py-20 text-center">
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#1D976C]/10">
               <ShoppingBag className="h-10 w-10 text-[#52635B]" />
             </div>
-            <h3 className="text-xl font-semibold text-[#F1F5F2]">No products found</h3>
+            <h3 className="text-xl font-semibold text-[#F1F5F2]">
+              {searchQuery ? `No results for "${searchQuery}"` : "No products found"}
+            </h3>
             <p className="mt-2 text-sm text-[#87968F]">
-              Try adjusting your filters or search term
+              {searchQuery 
+                ? "Try adjusting your search term or filters" 
+                : "Try adjusting your filters"}
             </p>
+            
+            {suggestions && suggestions.length > 0 && (
+              <div className="mt-6">
+                <p className="text-sm text-[#87968F] mb-3">Did you mean?</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {suggestions.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => setSearchQuery(product.name)}
+                      className="rounded-xl border border-[#1D976C]/20 bg-[#1D976C]/10 px-4 py-2 text-sm text-[#93F9B9] transition-all hover:bg-[#1D976C]/20"
+                    >
+                      {product.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div
