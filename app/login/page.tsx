@@ -7,7 +7,6 @@ import Link from 'next/link';
 import {
   Mail,
   Lock,
-  User,
   Eye,
   EyeOff,
   CheckCircle,
@@ -35,17 +34,14 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const Register = () => {
+const Login = () => {
   const router = useRouter();
   const authContext = useContext(AuthContext);
   const [formData, setFormData] = useState({
-    name: '',
     emailOrPhone: '',
     password: '',
-    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
@@ -96,12 +92,6 @@ const Register = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Full name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
-    }
-
     if (!formData.emailOrPhone.trim()) {
       newErrors.emailOrPhone = 'Email or phone number is required';
     } else if (loginMethod === 'email') {
@@ -118,12 +108,6 @@ const Register = () => {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain uppercase, lowercase, and number';
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -211,7 +195,7 @@ const Register = () => {
 
       if (response.data.success) {
         setOtpSuccess('OTP verified successfully!');
-        await registerUser();
+        await loginUser();
       } else {
         setOtpError(response.data.message || 'Invalid OTP');
       }
@@ -223,16 +207,15 @@ const Register = () => {
     }
   };
 
-  const registerUser = async () => {
+  const loginUser = async () => {
     try {
       const payload = {
-        name: formData.name,
         contact: formData.emailOrPhone,
         password: formData.password,
         method: loginMethod,
       };
 
-      const response = await axios.post('http://localhost:8000/register', payload);
+      const response = await axios.post('http://localhost:8000/login', payload);
 
       if (response.data.success) {
         setSuccess(true);
@@ -240,11 +223,11 @@ const Register = () => {
           router.push('/');
         }, 2000);
       } else {
-        setErrors({ submit: response.data.message || 'Registration failed' });
+        setErrors({ submit: response.data.message || 'Login failed' });
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      setErrors({ submit: 'Registration failed. Please try again.' });
+      console.error('Login error:', error);
+      setErrors({ submit: 'Login failed. Please try again.' });
     }
   };
 
@@ -289,14 +272,14 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignup = async () => {
+  const handleGoogleLogin = async () => {
     if (!authContext) return;
     setSocialError('');
     setSocialLoading(true);
     try {
       await authContext.signInWithGoogle();
     } catch (error) {
-      console.error('Google signup error:', error);
+      console.error('Google login error:', error);
       setSocialError('Google sign in failed. Please try again.');
     } finally {
       setSocialLoading(false);
@@ -377,7 +360,7 @@ const Register = () => {
                   <div className="inline-flex items-center gap-2 bg-[#1D976C]/10 border border-[#1D976C]/20 rounded-full px-4 py-1.5">
                     <Sprout className="w-4 h-4 text-[#93F9B9]" />
                     <span className="text-xs font-medium text-[#93F9B9] tracking-wider uppercase">
-                      Join AgroCare
+                      Welcome Back
                     </span>
                     <span className="w-1.5 h-1.5 rounded-full bg-[#93F9B9] animate-pulse ml-1" />
                   </div>
@@ -389,10 +372,10 @@ const Register = () => {
                   transition={{ duration: 0.7, delay: 0.2 }}
                   className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.1]"
                 >
-                  <span className="text-[#F1F5F2]">Create your</span>
+                  <span className="text-[#F1F5F2]">Welcome back</span>
                   <br />
                   <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
-                    Account
+                    Sign in
                   </span>
                 </motion.h1>
 
@@ -402,8 +385,8 @@ const Register = () => {
                   transition={{ duration: 0.7, delay: 0.3 }}
                   className="text-lg text-[#A9B5AF] max-w-lg leading-relaxed"
                 >
-                  Join thousands of farmers and agriculture enthusiasts in
-                  building a sustainable future with AgroCare.
+                  Sign in to your account and continue your journey with AgroCare.
+                  Access premium products, expert guidance, and connect with our growing community.
                 </motion.p>
 
                 <motion.div
@@ -470,9 +453,9 @@ const Register = () => {
                   transition={{ duration: 0.7, delay: 0.7 }}
                   className="text-sm text-[#7D8983]"
                 >
-                  Already have an account?{' '}
-                  <Link href="/login" className="text-[#93F9B9] hover:text-[#1D976C] transition-colors font-medium">
-                    Sign in instead
+                  Dont have an account?{' '}
+                  <Link href="/register" className="text-[#93F9B9] hover:text-[#1D976C] transition-colors font-medium">
+                    Create one now
                   </Link>
                 </motion.div>
               </div>
@@ -495,8 +478,8 @@ const Register = () => {
                         <div className="w-20 h-20 rounded-full bg-[#1D976C]/20 flex items-center justify-center mx-auto mb-4">
                           <CheckCircle className="w-10 h-10 text-[#93F9B9]" />
                         </div>
-                        <h3 className="text-2xl font-bold text-[#F1F5F2] mb-2">Registration Successful!</h3>
-                        <p className="text-[#A9B5AF]">Welcome to AgroCare family. Redirecting...</p>
+                        <h3 className="text-2xl font-bold text-[#F1F5F2] mb-2">Welcome Back!</h3>
+                        <p className="text-[#A9B5AF]">Redirecting to your dashboard...</p>
                       </motion.div>
                     ) : (
                       <motion.form
@@ -507,34 +490,6 @@ const Register = () => {
                         onSubmit={handleSubmit}
                         className="space-y-5"
                       >
-                        <div>
-                          <label className="block text-sm font-medium text-[#F1F5F2] mb-1.5">
-                            Full Name
-                          </label>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52635B]" />
-                            <input
-                              type="text"
-                              name="name"
-                              value={formData.name}
-                              onChange={handleChange}
-                              placeholder="John Doe"
-                              className={cn(
-                                'w-full rounded-xl border bg-white/[0.035] py-3 pl-10 pr-4 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none backdrop-blur-xl transition-all focus:border-[#1D976C]/40 focus:ring-2 focus:ring-[#1D976C]/10',
-                                errors.name
-                                  ? 'border-red-500/50 focus:border-red-500/50'
-                                  : 'border-white/[0.08]'
-                              )}
-                            />
-                          </div>
-                          {errors.name && (
-                            <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-                              <AlertCircle className="w-3 h-3" />
-                              {errors.name}
-                            </p>
-                          )}
-                        </div>
-
                         <div>
                           <label className="block text-sm font-medium text-[#F1F5F2] mb-1.5">
                             Email or Phone Number
@@ -679,43 +634,13 @@ const Register = () => {
                           )}
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-[#F1F5F2] mb-1.5">
-                            Confirm Password
-                          </label>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52635B]" />
-                            <input
-                              type={showConfirmPassword ? 'text' : 'password'}
-                              name="confirmPassword"
-                              value={formData.confirmPassword}
-                              onChange={handleChange}
-                              placeholder="••••••••"
-                              className={cn(
-                                'w-full rounded-xl border bg-white/[0.035] py-3 pl-10 pr-12 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none backdrop-blur-xl transition-all focus:border-[#1D976C]/40 focus:ring-2 focus:ring-[#1D976C]/10',
-                                errors.confirmPassword
-                                  ? 'border-red-500/50 focus:border-red-500/50'
-                                  : 'border-white/[0.08]'
-                              )}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#52635B] hover:text-[#F1F5F2] transition-colors"
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="w-4 h-4" />
-                              ) : (
-                                <Eye className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                          {errors.confirmPassword && (
-                            <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
-                              <AlertCircle className="w-3 h-3" />
-                              {errors.confirmPassword}
-                            </p>
-                          )}
+                        <div className="flex items-center justify-between">
+                          <Link
+                            href="/forgot-password"
+                            className="text-xs text-[#7D8983] hover:text-[#93F9B9] transition-colors"
+                          >
+                            Forgot password?
+                          </Link>
                         </div>
 
                         {errors.submit && (
@@ -739,7 +664,7 @@ const Register = () => {
                             </div>
                           ) : (
                             <span className="flex items-center gap-2">
-                              {showOtpInput ? 'Verify & Register' : 'Continue'}
+                              {showOtpInput ? 'Verify & Login' : 'Sign In'}
                               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </span>
                           )}
@@ -757,7 +682,7 @@ const Register = () => {
 
                         <button
                           type="button"
-                          onClick={handleGoogleSignup}
+                          onClick={handleGoogleLogin}
                           disabled={socialLoading}
                           className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] py-3 px-4 text-sm font-medium text-[#F1F5F2] backdrop-blur-xl transition-all hover:bg-white/[0.06] hover:border-white/[0.15] disabled:opacity-60 disabled:cursor-not-allowed"
                         >
@@ -770,7 +695,7 @@ const Register = () => {
                         </button>
 
                         <p className="text-xs text-center text-[#7D8983]">
-                          By creating an account, you agree to our{' '}
+                          By signing in, you agree to our{' '}
                           <Link href="/terms" className="text-[#93F9B9] hover:underline">
                             Terms of Service
                           </Link>
@@ -794,4 +719,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
