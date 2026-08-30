@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -23,24 +23,24 @@ import { Product } from "@/types/product.types";
 
 const fuzzySearch = (text: string, query: string): boolean => {
   if (!query.trim()) return true;
-  
+
   const normalizedText = text.toLowerCase().trim();
   const normalizedQuery = query.toLowerCase().trim();
-  
+
   if (normalizedText.includes(normalizedQuery)) return true;
-  
+
   const queryWords = normalizedQuery.split(/\s+/);
   const textWords = normalizedText.split(/\s+/);
-  
+
   const allWordsPresent = queryWords.every((qWord) => {
     return textWords.some((tWord) => {
       if (tWord.includes(qWord)) return true;
       return levenshteinDistance(tWord, qWord) <= 2;
     });
   });
-  
+
   if (allWordsPresent) return true;
-  
+
   return textWords.some((tWord) => {
     return queryWords.some((qWord) => {
       return levenshteinDistance(tWord, qWord) <= 2;
@@ -51,17 +51,17 @@ const fuzzySearch = (text: string, query: string): boolean => {
 const levenshteinDistance = (a: string, b: string): number => {
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
-  
+
   const matrix = [];
-  
+
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
   }
-  
+
   for (let j = 0; j <= a.length; j++) {
     matrix[0][j] = j;
   }
-  
+
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       if (b[i - 1] === a[j - 1]) {
@@ -75,7 +75,7 @@ const levenshteinDistance = (a: string, b: string): number => {
       }
     }
   }
-  
+
   return matrix[b.length][a.length];
 };
 
@@ -134,7 +134,7 @@ const sortOptions = [
 const Shop = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -143,35 +143,56 @@ const Shop = () => {
   const [sortBy, setSortBy] = useState("featured");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [showOrganicOnly, setShowOrganicOnly] = useState(false);
   const [showFreeDelivery, setShowFreeDelivery] = useState(false);
   const [showInStock, setShowInStock] = useState(true);
-  
+
   const isFirstRender = useRef(true);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearchDebounce = useCallback((value: string) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedSearchQuery(value);
+    }, 300);
+  }, []);
 
   useEffect(() => {
     const q = searchParams.get("q");
     if (q && isFirstRender.current) {
       setSearchQuery(q);
+      setDebouncedSearchQuery(q);
     }
     isFirstRender.current = false;
   }, [searchParams]);
 
   useEffect(() => {
+    handleSearchDebounce(searchQuery);
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [searchQuery, handleSearchDebounce]);
+
+  useEffect(() => {
     if (isFirstRender.current) {
       return;
     }
-    
+
     const currentParams = new URLSearchParams(searchParams);
-    if (searchQuery) {
-      currentParams.set("q", searchQuery);
+    if (debouncedSearchQuery) {
+      currentParams.set("q", debouncedSearchQuery);
     } else {
       currentParams.delete("q");
     }
     const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
     router.replace(newUrl, { scroll: false });
-  }, [searchQuery, router, searchParams]);
+  }, [debouncedSearchQuery, router]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -198,8 +219,8 @@ const Shop = () => {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
       filtered = filtered.filter(
         (p) =>
           fuzzySearch(p.name, query) ||
@@ -243,7 +264,7 @@ const Shop = () => {
   }, [
     products,
     selectedCategory,
-    searchQuery,
+    debouncedSearchQuery,
     priceRange,
     showOrganicOnly,
     showFreeDelivery,
@@ -263,11 +284,11 @@ const Shop = () => {
   ];
 
   const getSearchSuggestion = () => {
-    if (!searchQuery || filteredProducts.length > 0) return null;
-    
-    const query = searchQuery.toLowerCase().trim();
+    if (!debouncedSearchQuery || filteredProducts.length > 0) return null;
+
+    const query = debouncedSearchQuery.toLowerCase().trim();
     const allProducts = [...products];
-    
+
     const suggestions = allProducts
       .filter((p) => {
         const name = p.name.toLowerCase();
@@ -275,7 +296,7 @@ const Shop = () => {
         return fuzzySearch(name, query) || fuzzySearch(desc, query);
       })
       .slice(0, 3);
-    
+
     if (suggestions.length > 0) {
       return suggestions;
     }
@@ -358,9 +379,9 @@ const Shop = () => {
             </div>
 
             <div className="flex w-full md:w-auto gap-2">
-              <SearchInput 
-                searchQuery={searchQuery} 
-                onSearchChange={setSearchQuery} 
+              <SearchInput
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
               />
             </div>
           </div>
@@ -522,6 +543,7 @@ const Shop = () => {
                         setShowInStock(true);
                         setSelectedCategory("All");
                         setSearchQuery("");
+                        setDebouncedSearchQuery("");
                       }}
                       className="w-full rounded-xl border border-[#1D976C]/20 px-4 py-2 text-sm text-[#93F9B9] transition-all duration-300 hover:bg-[#1D976C]/10"
                     >
@@ -543,11 +565,11 @@ const Shop = () => {
               {searchQuery ? `No results for "${searchQuery}"` : "No products found"}
             </h3>
             <p className="mt-2 text-sm text-[#87968F]">
-              {searchQuery 
-                ? "Try adjusting your search term or filters" 
+              {searchQuery
+                ? "Try adjusting your search term or filters"
                 : "Try adjusting your filters"}
             </p>
-            
+
             {suggestions && suggestions.length > 0 && (
               <div className="mt-6">
                 <p className="text-sm text-[#87968F] mb-3">Did you mean?</p>
@@ -555,7 +577,10 @@ const Shop = () => {
                   {suggestions.map((product) => (
                     <button
                       key={product.id}
-                      onClick={() => setSearchQuery(product.name)}
+                      onClick={() => {
+                        setSearchQuery(product.name);
+                        setDebouncedSearchQuery(product.name);
+                      }}
                       className="rounded-xl border border-[#1D976C]/20 bg-[#1D976C]/10 px-4 py-2 text-sm text-[#93F9B9] transition-all hover:bg-[#1D976C]/20"
                     >
                       {product.name}
@@ -599,7 +624,7 @@ const Shop = () => {
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute inset-x-0 bottom-0 h-12 sm:h-14 md:h-16 bg-gradient-to-t from-[#0A110E] to-transparent" />
-                      
+
                       <div className="absolute left-2 sm:left-3 top-2 sm:top-3 flex flex-col gap-1">
                         {product.isOrganic && (
                           <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded-full bg-[#1D976C]/90 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-medium text-white backdrop-blur-sm">
