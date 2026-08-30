@@ -149,22 +149,17 @@ const Shop = () => {
   const [showInStock, setShowInStock] = useState(true);
   
   const isFirstRender = useRef(true);
-  const hasSetInitialQuery = useRef(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !hasSetInitialQuery.current) {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get("q") || "";
-      if (q) {
-        setSearchQuery(q);
-      }
-      hasSetInitialQuery.current = true;
+    const q = searchParams.get("q");
+    if (q && isFirstRender.current) {
+      setSearchQuery(q);
     }
-  }, []);
+    isFirstRender.current = false;
+  }, [searchParams]);
 
   useEffect(() => {
     if (isFirstRender.current) {
-      isFirstRender.current = false;
       return;
     }
     
@@ -177,13 +172,6 @@ const Shop = () => {
     const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
     router.replace(newUrl, { scroll: false });
   }, [searchQuery, router, searchParams]);
-
-  useEffect(() => {
-    const q = searchParams.get("q");
-    if (q !== null && q !== searchQuery && hasSetInitialQuery.current) {
-      setSearchQuery(q);
-    }
-  }, [searchParams, searchQuery]);
 
   useEffect(() => {
     const fetchProducts = async () => {
