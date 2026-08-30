@@ -41,7 +41,6 @@ const navLinks = [
   { name: "Shop", href: "/shop", icon: Package },
   { name: "Academy", href: "/academy", icon: GraduationCap },
   { name: "Experts", href: "/experts", icon: MessageCircle },
-  { name: "My Farm", href: "/farm", icon: Calendar },
 ];
 
 const particlePositions = [
@@ -307,7 +306,8 @@ export const Navbar = () => {
                     onClick={handleToggleSearch}
                     className={cn(
                       "rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10",
-                      isSearchOpen && "bg-[rgba(255,255,255,0.08)] text-[#93F9B9]",
+                      isSearchOpen &&
+                        "bg-[rgba(255,255,255,0.08)] text-[#93F9B9]",
                     )}
                   >
                     <AnimatePresence mode="wait" initial={false}>

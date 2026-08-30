@@ -1,4 +1,3 @@
- 
 export interface Product {
   id: number;
   name: string;
@@ -11,6 +10,7 @@ export interface Product {
   isOrganic?: boolean;
   freeDelivery?: boolean;
   isFeatured: boolean;
+  inStock?: boolean; // Add this property
 }
 
 export interface ProductCardProps {
