@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
- import Footer from "@/components/Layout/Footer";
+import Footer from "@/components/Layout/Footer";
 import { Navbar } from "@/components/Layout/Navbar";
+import AuthProvider from "@/AuthProvider/AuthProvider";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
@@ -32,13 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${notoSans.variable} ${notoSansTC.variable}`}>
       <body className="min-h-screen bg-soft-white font-noto-sans-tc antialiased">
-        <Navbar />
-
-        <main className="pt-16 md:pt-20">
-          <div className="mx-4 md:mx-6 lg:mx-8">{children}</div>
-        </main>
-
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="pt-16 md:pt-20">
+            <div className="mx-4 md:mx-6 lg:mx-8">{children}</div>
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
