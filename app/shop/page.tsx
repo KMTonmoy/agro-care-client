@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -131,7 +131,7 @@ const sortOptions = [
   { label: "Name: A to Z", value: "name" },
 ];
 
-const Shop = () => {
+const ShopContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -705,6 +705,25 @@ const Shop = () => {
         }
       `}</style>
     </section>
+  );
+};
+
+const ShopFallback = () => (
+  <section className="relative min-h-screen py-24">
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 z-10">
+      <div className="py-20 text-center">
+        <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#1D976C]/30 border-t-[#93F9B9]"></div>
+        <p className="text-[#87968F]">Loading products...</p>
+      </div>
+    </div>
+  </section>
+);
+
+const Shop = () => {
+  return (
+    <Suspense fallback={<ShopFallback />}>
+      <ShopContent />
+    </Suspense>
   );
 };
 

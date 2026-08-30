@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_TC } from "next/font/google";
 import "./globals.css";
+ import Footer from "@/components/Layout/Footer";
 import { Navbar } from "@/components/Layout/Navbar";
-import Footer from "@/components/Layout/Footer";
 
 const notoSans = Noto_Sans({
   subsets: ["latin"],
