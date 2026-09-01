@@ -14,7 +14,6 @@ import {
   Package,
   GraduationCap,
   MessageCircle,
-  Calendar,
   Home,
   LogOut,
   Settings,
@@ -22,6 +21,9 @@ import {
   Shield,
   Truck,
   Award,
+  LayoutDashboard,
+  ClipboardList,
+  Headphones,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -42,6 +44,13 @@ const navLinks = [
   { name: "Shop", href: "/shop", icon: Package },
   { name: "Academy", href: "/academy", icon: GraduationCap },
   { name: "Experts", href: "/experts", icon: MessageCircle },
+];
+
+const dashboardLinks = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "My Orders", href: "/dashboard/orders", icon: ClipboardList },
+  { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 const particlePositions = [
@@ -73,20 +82,16 @@ export const Navbar = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       setIsScrolled(currentScrollY > 10);
-
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-
       setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -158,17 +163,13 @@ export const Navbar = () => {
               : "bg-[#111714]/40 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.4)] border border-[rgba(255,255,255,0.04)]",
           )}
         >
-          {/* Steam / Smoke / Water Background Effect */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
             <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-[#1D976C]/5 via-[#93F9B9]/3 to-transparent rounded-full blur-3xl animate-float" />
-
             <div
               className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-[#93F9B9]/5 via-[#1D976C]/3 to-transparent rounded-full blur-3xl animate-float"
               style={{ animationDelay: "2s" }}
             />
-
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_rgba(29,151,108,0.03)_0%,_transparent_70%)] animate-pulse-slow" />
-
             {particlePositions.map((pos, i) => (
               <motion.div
                 key={i}
@@ -191,7 +192,6 @@ export const Navbar = () => {
             ))}
           </div>
 
-          {/* Katana Shine Sweep */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
             <motion.div
               className="absolute top-0 left-0 h-full w-1/4 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/25 to-transparent"
@@ -219,7 +219,6 @@ export const Navbar = () => {
 
           <div className="relative px-4 sm:px-6 lg:px-8 z-10">
             <div className="flex items-center justify-between h-16 md:h-[72px] max-w-7xl mx-auto">
-              {/* LEFT: LOGO */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Link href="/" className="flex items-center gap-2.5 group">
                   <motion.div
@@ -229,7 +228,6 @@ export const Navbar = () => {
                   >
                     <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-[#1D976C] via-[#2BB584] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/40">
                       <Leaf className="w-5 h-5 md:w-6 md:h-6 text-white" />
-
                       <motion.div
                         className="absolute -inset-2 bg-gradient-to-br from-[#1D976C] to-[#93F9B9] rounded-2xl opacity-20 blur-2xl"
                         animate={{
@@ -243,21 +241,17 @@ export const Navbar = () => {
                         }}
                       />
                     </div>
-
                     <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#93F9B9] rounded-full border-2 border-[#111714] animate-pulse" />
                   </motion.div>
-
                   <div className="flex flex-col leading-tight">
                     <span className="text-lg md:text-2xl font-extrabold tracking-tight">
                       <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
                         Agro
                       </span>
-
                       <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
                         Care
                       </span>
                     </span>
-
                     <span className="text-[8px] md:text-[10px] font-medium text-[#93F9B9]/50 tracking-[0.2em] uppercase hidden sm:block">
                       Smart Farming
                     </span>
@@ -265,12 +259,10 @@ export const Navbar = () => {
                 </Link>
               </div>
 
-              {/* CENTER: NAVIGATION LINKS */}
               <nav className="hidden lg:flex items-center justify-center gap-0.5 absolute left-1/2 -translate-x-1/2">
                 {navLinks.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(link.href);
-
                   return (
                     <Link
                       key={link.href}
@@ -286,7 +278,6 @@ export const Navbar = () => {
                         <Icon className="w-4 h-4" />
                         {link.name}
                       </span>
-
                       {active && (
                         <motion.div
                           layoutId="navbar-indicator"
@@ -303,9 +294,7 @@ export const Navbar = () => {
                 })}
               </nav>
 
-              {/* RIGHT: ACTIONS */}
               <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                {/* SEARCH */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -349,7 +338,6 @@ export const Navbar = () => {
                   </Button>
                 </motion.div>
 
-                {/* CART */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -360,16 +348,13 @@ export const Navbar = () => {
                     className="relative rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10"
                   >
                     <ShoppingCart className="w-5 h-5" />
-
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#1D976C] to-[#93F9B9] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-[#1D976C]/40 ring-2 ring-[#111714]">
                       3
                     </span>
-
                     <span className="sr-only">Cart</span>
                   </Button>
                 </motion.div>
 
-                {/* PROFILE / AUTH BUTTONS */}
                 {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger className="cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-0.5 transition-all duration-300 outline-none">
@@ -393,7 +378,6 @@ export const Navbar = () => {
                               {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
                             </AvatarFallback>
                           </Avatar>
-
                           <div>
                             <p className="font-semibold text-sm truncate max-w-[140px]">
                               {user?.displayName || user?.email || "User"}
@@ -407,24 +391,28 @@ export const Navbar = () => {
 
                       <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                        <User className="mr-2 h-4 w-4 text-[#1D976C]" />
-                        <span>Profile</span>
-                      </DropdownMenuItem>
+                      {dashboardLinks.map((link) => (
+                        <DropdownMenuItem key={link.href}>
+                          <Link
+                            href={link.href}
+                            className="flex w-full items-center rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200"
+                          >
+                            <link.icon className="mr-2 h-4 w-4 text-[#1D976C]" />
+                            <span>{link.name}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
 
-                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                        <Package className="mr-2 h-4 w-4 text-[#1D976C]" />
-                        <span>My Orders</span>
-                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                        <Leaf className="mr-2 h-4 w-4 text-[#1D976C]" />
-                        <span>My Farm</span>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuItem className="cursor-pointer rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200">
-                        <Settings className="mr-2 h-4 w-4 text-[#1D976C]" />
-                        <span>Settings</span>
+                      <DropdownMenuItem>
+                        <Link
+                          href="/help"
+                          className="flex w-full items-center rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200"
+                        >
+                          <Headphones className="mr-2 h-4 w-4 text-[#1D976C]" />
+                          <span>Help & Support</span>
+                        </Link>
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
@@ -456,7 +444,6 @@ export const Navbar = () => {
                   </div>
                 )}
 
-                {/* MOBILE MENU */}
                 <Sheet
                   open={isMobileMenuOpen}
                   onOpenChange={setIsMobileMenuOpen}
@@ -475,7 +462,6 @@ export const Navbar = () => {
                         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-[#1D976C]/10 via-[#93F9B9]/5 to-transparent rounded-full blur-3xl" />
                       </div>
 
-                      {/* MOBILE HEADER */}
                       <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 relative z-10">
                         <Link
                           href="/"
@@ -485,18 +471,15 @@ export const Navbar = () => {
                           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1D976C] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/30">
                             <Leaf className="w-5 h-5 text-[#111714]" />
                           </div>
-
                           <span className="text-xl font-extrabold tracking-tight">
                             <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
                               Agro
                             </span>
-
                             <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
                               Care
                             </span>
                           </span>
                         </Link>
-
                         <button
                           type="button"
                           onClick={closeMobileMenu}
@@ -506,12 +489,10 @@ export const Navbar = () => {
                         </button>
                       </div>
 
-                      {/* MOBILE NAVIGATION */}
                       <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10">
                         {navLinks.map((link) => {
                           const Icon = link.icon;
                           const active = isActive(link.href);
-
                           return (
                             <Link
                               key={link.href}
@@ -532,16 +513,33 @@ export const Navbar = () => {
 
                         <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
 
+                        <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#7D8983]">
+                          Dashboard
+                        </p>
+
+                        {dashboardLinks.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            onClick={closeMobileMenu}
+                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
+                          >
+                            <link.icon className="w-5 h-5 text-[#1D976C]" />
+                            {link.name}
+                          </Link>
+                        ))}
+
+                        <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
+
                         <div className="space-y-1">
                           <Link
                             href="/help"
                             onClick={closeMobileMenu}
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
                           >
-                            <HelpCircle className="w-5 h-5" />
+                            <Headphones className="w-5 h-5" />
                             Help & Support
                           </Link>
-
                           <Link
                             href="/about"
                             onClick={closeMobileMenu}
@@ -553,7 +551,6 @@ export const Navbar = () => {
                         </div>
                       </nav>
 
-                      {/* MOBILE FOOTER */}
                       <div className="p-6 border-t border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 space-y-3 relative z-10">
                         {user ? (
                           <>
@@ -589,7 +586,6 @@ export const Navbar = () => {
                                 Sign In
                               </Button>
                             </Link>
-
                             <Link href="/register" onClick={closeMobileMenu}>
                               <Button className="w-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold rounded-xl shadow-lg shadow-[#1D976C]/30 transition-all duration-300 h-12">
                                 Create Account
@@ -597,15 +593,12 @@ export const Navbar = () => {
                             </Link>
                           </>
                         )}
-
                         <div className="flex items-center justify-center gap-3 pt-2">
                           <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
                             <Truck className="w-3.5 h-3.5 text-[#1D976C]" />
                             Free Delivery
                           </div>
-
                           <div className="w-px h-4 bg-[rgba(255,255,255,0.06)]" />
-
                           <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
                             <Award className="w-3.5 h-3.5 text-[#1D976C]" />
                             100% Organic
@@ -619,7 +612,6 @@ export const Navbar = () => {
             </div>
           </div>
 
-          {/* EXPANDABLE SEARCH BAR */}
           <AnimatePresence>
             {isSearchOpen && (
               <motion.div
@@ -632,7 +624,6 @@ export const Navbar = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                   <div className="flex items-center gap-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 focus-within:border-[#1D976C]/50 transition-all duration-300">
                     <Search className="w-4.5 h-4.5 text-[#93F9B9] shrink-0" />
-
                     <input
                       autoFocus
                       type="text"
@@ -644,7 +635,6 @@ export const Navbar = () => {
                       placeholder="Search for seeds, fertilizer, tools, machinery..."
                       className="flex-1 bg-transparent text-sm md:text-base text-[#F1F5F2] placeholder:text-[#7D8983] outline-none"
                     />
-
                     <Button
                       onClick={handleSearchSubmit}
                       className="rounded-lg bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 px-4 text-sm shrink-0"
