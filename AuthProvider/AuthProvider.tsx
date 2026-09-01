@@ -24,7 +24,7 @@ import axios from 'axios';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  createUser: (email: string, password: string) => Promise<void>;
+  createUser: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signInWithFacebook: () => Promise<void>;
@@ -35,6 +35,9 @@ interface AuthContextType {
   sendEmailVerification: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   signInWithPhone: (phoneNumber: string) => Promise<ConfirmationResult>;
+  sendOTP: (contact: string, method: 'email' | 'phone') => Promise<void>;
+  verifyOTP: (contact: string, otp: string, method: 'email' | 'phone') => Promise<void>;
+  registerWithOTP: (name: string, email: string, password: string) => Promise<void>;
 }
 
 interface UserData {
@@ -43,6 +46,7 @@ interface UserData {
   photo: string;
   role: string;
   phone?: string;
+  firebaseUid?: string;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -57,11 +61,33 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const router = useRouter();
 
-  const createUser = async (email: string, password: string) => {
+  // Register with email and password (Firebase + MongoDB)
+  const createUser = async (email: string, password: string, name: string) => {
     setLoading(true);
     try {
+      // 1. Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await sendEmailVerification(userCredential.user);
+      const firebaseUser = userCredential.user;
+
+      // 2. Update Firebase profile with name
+      await updateProfile(firebaseUser, {
+        displayName: name,
+        photoURL: '',
+      });
+
+      // 3. Save user to MongoDB via your backend
+      await saveUserToBackend({
+        ...firebaseUser,
+        displayName: name,
+      });
+
+      // 4. Send email verification
+      await sendEmailVerification(firebaseUser);
+
+      // 5. Update local state with the new user
+      const updatedUser = { ...firebaseUser, displayName: name };
+      setUser(updatedUser);
+
       router.push('/');
     } catch (error) {
       console.error('Error creating user:', error);
@@ -71,10 +97,84 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Register with OTP flow (Custom backend + Firebase)
+  const registerWithOTP = async (name: string, email: string, password: string) => {
+    setLoading(true);
+    try {
+      // 1. First, register the user in your backend
+      const response = await axios.post('http://localhost:8000/api/auth/register', {
+        name,
+        email,
+        password,
+      });
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Registration failed');
+      }
+
+      // 2. If registration successful, also create in Firebase
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
+
+        // Update Firebase profile with name
+        await updateProfile(firebaseUser, {
+          displayName: name,
+          photoURL: '',
+        });
+
+        // Send email verification
+        await sendEmailVerification(firebaseUser);
+
+        // Update local state
+        const updatedUser = { ...firebaseUser, displayName: name };
+        setUser(updatedUser);
+
+        console.log('✅ User created in both MongoDB and Firebase');
+      } catch (firebaseError) {
+        console.warn('⚠️ User created in MongoDB but failed in Firebase:', firebaseError);
+        // Continue - user is already in MongoDB
+      }
+
+      router.push('/');
+    } catch (error) {
+      console.error('Error registering with OTP:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Save user to backend (MongoDB) - Enhanced version
+  const saveUserToBackend = async (user: User) => {
+    try {
+      const userData: UserData = {
+        email: user?.email || '',
+        name: user?.displayName || 'User',
+        photo: user?.photoURL || '',
+        role: 'user',
+        phone: user?.phoneNumber || '',
+        firebaseUid: user?.uid || '',
+      };
+
+      const response = await axios.put('http://localhost:8000/api/user', userData);
+      console.log('✅ User saved to MongoDB:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error saving user to backend:', error);
+      throw error;
+    }
+  };
+
+  // Login with email (Firebase + MongoDB)
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Save/update user in MongoDB
+      await saveUserToBackend(userCredential.user);
+      
       router.push('/');
     } catch (error) {
       console.error('Error signing in:', error);
@@ -84,11 +184,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Login with Google
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      await saveUser(result.user);
+      await saveUserToBackend(result.user);
       router.push('/');
     } catch (error) {
       console.error('Error signing in with Google:', error);
@@ -98,11 +199,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Login with Facebook
   const signInWithFacebook = async () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, facebookProvider);
-      await saveUser(result.user);
+      await saveUserToBackend(result.user);
       router.push('/');
     } catch (error) {
       console.error('Error signing in with Facebook:', error);
@@ -112,36 +214,48 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const logOut = async () => {
-    setLoading(true);
+  // Send OTP (Custom - via your backend)
+  const sendOTP = async (contact: string, method: 'email' | 'phone') => {
     try {
-      await axios.get(`http://localhost:8000/logout`, {
-        withCredentials: true,
+      const response = await axios.post('http://localhost:8000/api/auth/send-otp', {
+        contact,
+        method,
       });
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const updateUserProfile = async (name: string, photo: string) => {
-    try {
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: name,
-          photoURL: photo,
-        });
+      if (response.data.success) {
+        console.log('OTP sent successfully');
+        return response.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to send OTP');
       }
     } catch (error) {
-      console.error('Error updating user profile:', error);
+      console.error('Error sending OTP:', error);
       throw error;
     }
   };
 
+  // Verify OTP (Custom - via your backend)
+  const verifyOTP = async (contact: string, otp: string, method: 'email' | 'phone') => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/auth/verify-otp', {
+        contact,
+        otp,
+        method,
+      });
+
+      if (response.data.success) {
+        console.log('OTP verified successfully');
+        return response.data;
+      } else {
+        throw new Error(response.data.message || 'Invalid OTP');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      throw error;
+    }
+  };
+
+  // Send phone OTP (Firebase)
   const sendPhoneOTP = async (phoneNumber: string): Promise<ConfirmationResult> => {
     try {
       const recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -156,6 +270,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Verify phone OTP (Firebase)
   const verifyPhoneOTP = async (confirmationResult: ConfirmationResult, code: string) => {
     try {
       const result = await confirmationResult.confirm(code);
@@ -163,7 +278,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
 
       if (user) {
-        await saveUser(user);
+        await saveUserToBackend(user);
       }
 
       router.push('/');
@@ -173,6 +288,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Sign in with phone (Firebase)
   const signInWithPhone = async (phoneNumber: string): Promise<ConfirmationResult> => {
     try {
       const recaptcha = new RecaptchaVerifier(auth, 'recaptcha-container', {
@@ -187,6 +303,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Send email verification (Firebase)
   const sendEmailVerificationCode = async () => {
     try {
       if (auth.currentUser) {
@@ -198,6 +315,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Reset password (Firebase)
   const resetPassword = async (email: string) => {
     try {
       await sendPasswordResetEmail(auth, email);
@@ -207,46 +325,60 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const saveUser = async (user: User) => {
+  // Update user profile (Firebase + MongoDB)
+  const updateUserProfile = async (name: string, photo: string) => {
     try {
-      const existingUserResponse = await axios.get(
-        `http://localhost:8000/users/${user?.email || user?.phoneNumber}`
-      );
-      const existingUser = existingUserResponse.data;
-
-      if (existingUser) {
-        return existingUser;
+      if (auth.currentUser) {
+        await updateProfile(auth.currentUser, {
+          displayName: name,
+          photoURL: photo,
+        });
+        
+        // Update in MongoDB as well
+        await saveUserToBackend({
+          ...auth.currentUser,
+          displayName: name,
+          photoURL: photo,
+        });
+        
+        // Update local state
+        const updatedUser = { ...auth.currentUser, displayName: name, photoURL: photo };
+        setUser(updatedUser);
       }
-
-      const currentUser: UserData = {
-        email: user?.email || '',
-        name: user?.displayName || '',
-        photo: user?.photoURL || '',
-        role: 'user',
-        phone: user?.phoneNumber || '',
-      };
-      const { data } = await axios.put(
-        `http://localhost:8000/user`,
-        currentUser
-      );
-      return data;
     } catch (error) {
-      console.error('Error saving user:', error);
+      console.error('Error updating user profile:', error);
       throw error;
     }
   };
 
+  // Logout
+  const logOut = async () => {
+    setLoading(true);
+    try {
+      await axios.get('http://localhost:8000/api/auth/logout', {
+        withCredentials: true,
+      });
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auth state listener - Sync Firebase user with MongoDB
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        setTimeout(async () => {
-          try {
-            await saveUser(currentUser);
-          } catch (error) {
-            console.error('Error handling auth state change:', error);
-          }
-        }, 5000);
+        try {
+          // Auto-save to MongoDB whenever Firebase auth state changes
+          await saveUserToBackend(currentUser);
+        } catch (error) {
+          console.error('Error saving user on auth change:', error);
+        }
       }
       setLoading(false);
     });
@@ -267,6 +399,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     sendEmailVerification: sendEmailVerificationCode,
     resetPassword,
     signInWithPhone,
+    sendOTP,
+    verifyOTP,
+    registerWithOTP,
   };
 
   return (

@@ -12,13 +12,11 @@ import {
   EyeOff,
   CheckCircle,
   AlertCircle,
-  Leaf,
   Sprout,
   ArrowRight,
   Shield,
   Truck,
   Award,
-  Smartphone,
   Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +38,7 @@ const Register = () => {
   const authContext = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: '',
-    emailOrPhone: '',
+    email: '',
     password: '',
     confirmPassword: '',
   });
@@ -54,7 +52,6 @@ const Register = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [timer, setTimer] = useState(60);
   const canResend = timer <= 0;
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [otpError, setOtpError] = useState('');
   const [otpSuccess, setOtpSuccess] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
@@ -75,24 +72,6 @@ const Register = () => {
     };
   }, [timer]);
 
-  const particlePositions = [
-    { top: '10%', left: '5%' },
-    { top: '20%', left: '85%' },
-    { top: '35%', left: '15%' },
-    { top: '50%', left: '75%' },
-    { top: '65%', left: '25%' },
-    { top: '80%', left: '90%' },
-    { top: '90%', left: '10%' },
-    { top: '15%', left: '45%' },
-    { top: '45%', left: '55%' },
-    { top: '70%', left: '40%' },
-    { top: '30%', left: '95%' },
-    { top: '85%', left: '60%' },
-    { top: '55%', left: '8%' },
-    { top: '5%', left: '65%' },
-    { top: '95%', left: '35%' },
-  ];
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -102,16 +81,10 @@ const Register = () => {
       newErrors.name = 'Name must be at least 2 characters';
     }
 
-    if (!formData.emailOrPhone.trim()) {
-      newErrors.emailOrPhone = 'Email or phone number is required';
-    } else if (loginMethod === 'email') {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.emailOrPhone)) {
-        newErrors.emailOrPhone = 'Please enter a valid email address';
-      }
-    } else {
-      if (!/^[0-9]{10,15}$/.test(formData.emailOrPhone.replace(/[^0-9]/g, ''))) {
-        newErrors.emailOrPhone = 'Please enter a valid phone number';
-      }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
 
     if (!formData.password) {
@@ -130,23 +103,9 @@ const Register = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const detectLoginMethod = (value: string) => {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      return 'email';
-    } else if (/^[0-9+\-\s]{10,15}$/.test(value.replace(/[^0-9+\-]/g, ''))) {
-      return 'phone';
-    }
-    return loginMethod;
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (name === 'emailOrPhone') {
-      const detected = detectLoginMethod(value);
-      setLoginMethod(detected);
-    }
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -154,8 +113,8 @@ const Register = () => {
   };
 
   const sendOTP = async () => {
-    if (!formData.emailOrPhone.trim()) {
-      setErrors({ ...errors, emailOrPhone: 'Please enter your email or phone number' });
+    if (!formData.email.trim()) {
+      setErrors({ ...errors, email: 'Please enter your email' });
       return false;
     }
 
@@ -164,12 +123,10 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const payload = {
-        contact: formData.emailOrPhone,
-        method: loginMethod,
-      };
-
-      const response = await axios.post('http://localhost:8000/send-otp', payload);
+      const response = await axios.post('http://localhost:8000/api/auth/send-otp', {
+        contact: formData.email,
+        method: 'email',
+      });
 
       if (response.data.success) {
         setIsOtpSent(true);
@@ -181,9 +138,9 @@ const Register = () => {
         setOtpError(response.data.message || 'Failed to send OTP');
         return false;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Send OTP error:', error);
-      setOtpError('Failed to send OTP. Please try again.');
+      setOtpError(error.response?.data?.message || 'Failed to send OTP. Please try again.');
       return false;
     } finally {
       setIsLoading(false);
@@ -201,50 +158,37 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const payload = {
-        contact: formData.emailOrPhone,
+      // 1. Verify OTP with backend
+      const response = await axios.post('http://localhost:8000/api/auth/verify-otp', {
+        contact: formData.email,
         otp: otpInput,
-        method: loginMethod,
-      };
-
-      const response = await axios.post('http://localhost:8000/verify-otp', payload);
+        method: 'email',
+      });
 
       if (response.data.success) {
         setOtpSuccess('OTP verified successfully!');
-        await registerUser();
+        
+        // 2. Register user in both MongoDB and Firebase
+        if (authContext) {
+          await authContext.registerWithOTP(
+            formData.name,
+            formData.email,
+            formData.password
+          );
+          
+          setSuccess(true);
+          setTimeout(() => {
+            router.push('/');
+          }, 2000);
+        }
       } else {
         setOtpError(response.data.message || 'Invalid OTP');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Verify OTP error:', error);
-      setOtpError('Failed to verify OTP. Please try again.');
+      setOtpError(error.response?.data?.message || 'Failed to verify OTP. Please try again.');
     } finally {
       setIsVerifying(false);
-    }
-  };
-
-  const registerUser = async () => {
-    try {
-      const payload = {
-        name: formData.name,
-        contact: formData.emailOrPhone,
-        password: formData.password,
-        method: loginMethod,
-      };
-
-      const response = await axios.post('http://localhost:8000/register', payload);
-
-      if (response.data.success) {
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-      } else {
-        setErrors({ submit: response.data.message || 'Registration failed' });
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setErrors({ submit: 'Registration failed. Please try again.' });
     }
   };
 
@@ -269,12 +213,10 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const payload = {
-        contact: formData.emailOrPhone,
-        method: loginMethod,
-      };
-
-      const response = await axios.post('http://localhost:8000/resend-otp', payload);
+      const response = await axios.post('http://localhost:8000/api/auth/send-otp', {
+        contact: formData.email,
+        method: 'email',
+      });
 
       if (response.data.success) {
         setOtpSuccess('OTP resent successfully!');
@@ -282,9 +224,9 @@ const Register = () => {
         setOtpError(response.data.message || 'Failed to resend OTP');
         setTimer(0);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Resend OTP error:', error);
-      setOtpError('Failed to resend OTP. Please try again.');
+      setOtpError(error.response?.data?.message || 'Failed to resend OTP. Please try again.');
       setTimer(0);
     }
   };
@@ -306,7 +248,7 @@ const Register = () => {
   const trustBadges = [
     { icon: Shield, label: '100% Secure' },
     { icon: Truck, label: 'Free Delivery' },
-    { icon: Leaf, label: '100% Organic' },
+    { icon: Sprout, label: '100% Organic' },
     { icon: Award, label: 'Growing Community' },
   ];
 
@@ -326,7 +268,6 @@ const Register = () => {
               ease: 'easeInOut',
             }}
           />
-
           <motion.div
             className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-[#93F9B9]/10 via-[#1D976C]/5 to-transparent rounded-full blur-3xl"
             animate={{
@@ -340,34 +281,12 @@ const Register = () => {
               delay: 2,
             }}
           />
-
-          {particlePositions.map((pos, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-[#93F9B9]/15"
-              style={{
-                top: pos.top,
-                left: pos.left,
-              }}
-              animate={{
-                y: [0, -40, 0],
-                x: [0, 20, 0],
-                opacity: [0.1, 0.5, 0.1],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{
-                duration: 5 + (i % 5) * 1.2,
-                repeat: Infinity,
-                delay: (i % 4) * 0.8,
-                ease: 'easeInOut',
-              }}
-            />
-          ))}
         </div>
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              {/* Left side - Content */}
               <div className="space-y-6">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -424,59 +343,9 @@ const Register = () => {
                     </React.Fragment>
                   ))}
                 </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.6 }}
-                  className="glass rounded-2xl p-6 border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 rounded-full bg-[#1D976C]/20 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-3 h-3 text-[#93F9B9]" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[#F1F5F2]">Access to Premium Products</p>
-                        <p className="text-xs text-[#7D8983]">Get quality agricultural products at best prices</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 rounded-full bg-[#1D976C]/20 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-3 h-3 text-[#93F9B9]" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[#F1F5F2]">Expert Guidance</p>
-                        <p className="text-xs text-[#7D8983]">Connect with agriculture experts and advisors</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1 w-5 h-5 rounded-full bg-[#1D976C]/20 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-3 h-3 text-[#93F9B9]" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-[#F1F5F2]">Community Support</p>
-                        <p className="text-xs text-[#7D8983]">Join a growing community of passionate farmers</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.7 }}
-                  className="text-sm text-[#7D8983]"
-                >
-                  Already have an account?{' '}
-                  <Link href="/login" className="text-[#93F9B9] hover:text-[#1D976C] transition-colors font-medium">
-                    Sign in instead
-                  </Link>
-                </motion.div>
               </div>
 
+              {/* Right side - Register Form */}
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -537,45 +406,30 @@ const Register = () => {
 
                         <div>
                           <label className="block text-sm font-medium text-[#F1F5F2] mb-1.5">
-                            Email or Phone Number
+                            Email Address
                           </label>
                           <div className="relative">
-                            {loginMethod === 'email' ? (
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52635B]" />
-                            ) : (
-                              <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52635B]" />
-                            )}
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52635B]" />
                             <input
-                              type="text"
-                              name="emailOrPhone"
-                              value={formData.emailOrPhone}
+                              type="email"
+                              name="email"
+                              value={formData.email}
                               onChange={handleChange}
-                              placeholder="Enter your email or phone number"
+                              placeholder="you@example.com"
                               className={cn(
                                 'w-full rounded-xl border bg-white/[0.035] py-3 pl-10 pr-4 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none backdrop-blur-xl transition-all focus:border-[#1D976C]/40 focus:ring-2 focus:ring-[#1D976C]/10',
-                                errors.emailOrPhone
+                                errors.email
                                   ? 'border-red-500/50 focus:border-red-500/50'
                                   : 'border-white/[0.08]'
                               )}
                             />
                           </div>
-                          {errors.emailOrPhone && (
+                          {errors.email && (
                             <p className="mt-1 text-xs text-red-400 flex items-center gap-1">
                               <AlertCircle className="w-3 h-3" />
-                              {errors.emailOrPhone}
+                              {errors.email}
                             </p>
                           )}
-                          <div className="mt-1.5 flex items-center gap-2">
-                            <span className="text-[10px] text-[#52635B]">Detected:</span>
-                            <span className={cn(
-                              'text-[10px] font-medium px-2 py-0.5 rounded-full',
-                              loginMethod === 'email'
-                                ? 'bg-blue-500/10 text-blue-400'
-                                : 'bg-green-500/10 text-green-400'
-                            )}>
-                              {loginMethod === 'email' ? 'Email' : 'Phone'}
-                            </span>
-                          </div>
                         </div>
 
                         <AnimatePresence>
@@ -632,7 +486,7 @@ const Register = () => {
                                     )}
                                   </span>
                                   <span className="text-xs text-[#52635B]">
-                                    OTP sent to {loginMethod === 'email' ? 'email' : 'phone'}
+                                    OTP sent to your email
                                   </span>
                                 </div>
                               </div>
