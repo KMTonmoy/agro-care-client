@@ -154,498 +154,487 @@ export const Navbar = () => {
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
       >
-        <div
-          className={cn(
-            "mx-4 md:mx-6 lg:mx-8 mt-3 md:mt-4 transition-all duration-700",
-            "rounded-2xl md:rounded-3xl overflow-hidden",
-            isScrolled || isHovered
-              ? "bg-[#111714]/70 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] border border-[rgba(255,255,255,0.06)]"
-              : "bg-[#111714]/40 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.4)] border border-[rgba(255,255,255,0.04)]",
-          )}
-        >
-          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-            <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-[#1D976C]/5 via-[#93F9B9]/3 to-transparent rounded-full blur-3xl animate-float" />
-            <div
-              className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-[#93F9B9]/5 via-[#1D976C]/3 to-transparent rounded-full blur-3xl animate-float"
-              style={{ animationDelay: "2s" }}
-            />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_rgba(29,151,108,0.03)_0%,_transparent_70%)] animate-pulse-slow" />
-            {particlePositions.map((pos, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full bg-[#93F9B9]/20"
-                style={{
-                  top: pos.top,
-                  left: pos.left,
-                }}
-                animate={{
-                  y: [0, -20, 0],
-                  x: [0, 10, 0],
-                  opacity: [0.2, 0.6, 0.2],
-                }}
-                transition={{
-                  duration: 4 + (i % 4) * 1,
-                  repeat: Infinity,
-                  delay: (i % 3) * 0.8,
-                }}
+        <div className="relative mx-4 md:mx-6 lg:mx-8 mt-3 md:mt-4 rounded-2xl md:rounded-3xl p-[1.5px] overflow-hidden">
+          {/* Rotating conic-gradient ring — glowing border */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-[-50%] pointer-events-none"
+            style={{
+              background:
+                "conic-gradient(from 0deg, transparent 0%, #93F9B9 15%, #1D976C 30%, transparent 45%, transparent 100%)",
+            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          />
+
+          <div
+            className={cn(
+              "relative transition-all duration-700",
+              "rounded-2xl md:rounded-3xl overflow-hidden",
+              isScrolled || isHovered
+                ? "bg-[#111714]/70 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.6)]"
+                : "bg-[#111714]/40 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.4)]",
+            )}
+          >
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+              <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-[#1D976C]/5 via-[#93F9B9]/3 to-transparent rounded-full blur-3xl animate-float" />
+              <div
+                className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-[#93F9B9]/5 via-[#1D976C]/3 to-transparent rounded-full blur-3xl animate-float"
+                style={{ animationDelay: "2s" }}
               />
-            ))}
-          </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_rgba(29,151,108,0.03)_0%,_transparent_70%)] animate-pulse-slow" />
+              {particlePositions.map((pos, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 rounded-full bg-[#93F9B9]/20"
+                  style={{
+                    top: pos.top,
+                    left: pos.left,
+                  }}
+                  animate={{
+                    y: [0, -20, 0],
+                    x: [0, 10, 0],
+                    opacity: [0.2, 0.6, 0.2],
+                  }}
+                  transition={{
+                    duration: 4 + (i % 4) * 1,
+                    repeat: Infinity,
+                    delay: (i % 3) * 0.8,
+                  }}
+                />
+              ))}
+            </div>
 
-          <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
-            <motion.div
-              className="absolute top-0 left-0 h-full w-1/4 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/25 to-transparent"
-              initial={{ x: "-150%" }}
-              animate={{ x: "450%" }}
-              transition={{
-                duration: 1.1,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatDelay: 4.5,
-              }}
-            />
-            <motion.div
-              className="absolute top-0 left-0 h-full w-[3px] -skew-x-[20deg] bg-white/60 blur-[1px]"
-              initial={{ x: "-150%" }}
-              animate={{ x: "450%" }}
-              transition={{
-                duration: 1.1,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatDelay: 4.5,
-              }}
-            />
-          </div>
-
-          <div className="relative px-4 sm:px-6 lg:px-8 z-10">
-            <div className="flex items-center justify-between h-16 md:h-[72px] max-w-7xl mx-auto">
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Link href="/" className="flex items-center gap-2.5 group">
-                  <motion.div
-                    whileHover={{ scale: 1.05, rotate: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="relative"
-                  >
-                    <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-[#1D976C] via-[#2BB584] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/40">
-                      <Leaf className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                      <motion.div
-                        className="absolute -inset-2 bg-gradient-to-br from-[#1D976C] to-[#93F9B9] rounded-2xl opacity-20 blur-2xl"
-                        animate={{
-                          scale: [1, 1.3, 1],
-                          opacity: [0.2, 0.5, 0.2],
-                        }}
-                        transition={{
-                          duration: 3,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#93F9B9] rounded-full border-2 border-[#111714] animate-pulse" />
-                  </motion.div>
-                  <div className="flex flex-col leading-tight">
-                    <span className="text-lg md:text-2xl font-extrabold tracking-tight">
-                      <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
-                        Agro
-                      </span>
-                      <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
-                        Care
-                      </span>
-                    </span>
-                    <span className="text-[8px] md:text-[10px] font-medium text-[#93F9B9]/50 tracking-[0.2em] uppercase hidden sm:block">
-                      Smart Farming
-                    </span>
-                  </div>
-                </Link>
-              </div>
-
-              <nav className="hidden lg:flex items-center justify-center gap-0.5 absolute left-1/2 -translate-x-1/2">
-                {navLinks.map((link) => {
-                  const Icon = link.icon;
-                  const active = isActive(link.href);
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={cn(
-                        "relative px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300",
-                        active
-                          ? "text-white bg-gradient-to-r from-[#1D976C]/30 to-[#93F9B9]/20 border border-[rgba(255,255,255,0.08)] shadow-lg shadow-[#1D976C]/10"
-                          : "text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)]",
-                      )}
+            <div className="relative px-4 sm:px-6 lg:px-8 z-10">
+              <div className="flex items-center justify-between h-16 md:h-[72px] max-w-7xl mx-auto">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Link href="/" className="flex items-center gap-2.5 group">
+                    <motion.div
+                      whileHover={{ scale: 1.05, rotate: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="relative"
                     >
-                      <span className="flex items-center gap-2">
-                        <Icon className="w-4 h-4" />
-                        {link.name}
-                      </span>
-                      {active && (
+                      <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-[#1D976C] via-[#2BB584] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/40">
+                        <Leaf className="w-5 h-5 md:w-6 md:h-6 text-white" />
                         <motion.div
-                          layoutId="navbar-indicator"
-                          className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-[#1D976C] to-[#93F9B9] rounded-full"
+                          className="absolute -inset-2 bg-gradient-to-br from-[#1D976C] to-[#93F9B9] rounded-2xl opacity-20 blur-2xl"
+                          animate={{
+                            scale: [1, 1.3, 1],
+                            opacity: [0.2, 0.5, 0.2],
+                          }}
                           transition={{
-                            type: "spring",
-                            bounce: 0.2,
-                            duration: 0.6,
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "easeInOut",
                           }}
                         />
-                      )}
-                    </Link>
-                  );
-                })}
-              </nav>
+                      </div>
+                      <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#93F9B9] rounded-full border-2 border-[#111714] animate-pulse" />
+                    </motion.div>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-lg md:text-2xl font-extrabold tracking-tight">
+                        <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
+                          Agro
+                        </span>
+                        <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
+                          Care
+                        </span>
+                      </span>
+                      <span className="text-[8px] md:text-[10px] font-medium text-[#93F9B9]/50 tracking-[0.2em] uppercase hidden sm:block">
+                        Smart Farming
+                      </span>
+                    </div>
+                  </Link>
+                </div>
 
-              <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleToggleSearch}
-                    className={cn(
-                      "rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10",
-                      isSearchOpen &&
-                        "bg-[rgba(255,255,255,0.08)] text-[#93F9B9]",
-                    )}
+                <nav className="hidden lg:flex items-center justify-center gap-0.5 absolute left-1/2 -translate-x-1/2">
+                  {navLinks.map((link) => {
+                    const Icon = link.icon;
+                    const active = isActive(link.href);
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={cn(
+                          "relative px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-300",
+                          active
+                            ? "text-white bg-gradient-to-r from-[#1D976C]/30 to-[#93F9B9]/20 border border-[rgba(255,255,255,0.08)] shadow-lg shadow-[#1D976C]/10"
+                            : "text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)]",
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          {link.name}
+                        </span>
+                        {active && (
+                          <motion.div
+                            layoutId="navbar-indicator"
+                            className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-gradient-to-r from-[#1D976C] to-[#93F9B9] rounded-full"
+                            transition={{
+                              type: "spring",
+                              bounce: 0.2,
+                              duration: 0.6,
+                            }}
+                          />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <AnimatePresence mode="wait" initial={false}>
-                      {isSearchOpen ? (
-                        <motion.span
-                          key="close"
-                          initial={{ opacity: 0, rotate: -90 }}
-                          animate={{ opacity: 1, rotate: 0 }}
-                          exit={{ opacity: 0, rotate: 90 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex items-center justify-center"
-                        >
-                          <X className="w-5 h-5" />
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="search"
-                          initial={{ opacity: 0, rotate: 90 }}
-                          animate={{ opacity: 1, rotate: 0 }}
-                          exit={{ opacity: 0, rotate: -90 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex items-center justify-center"
-                        >
-                          <Search className="w-5 h-5" />
-                        </motion.span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleToggleSearch}
+                      className={cn(
+                        "rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10",
+                        isSearchOpen &&
+                          "bg-[rgba(255,255,255,0.08)] text-[#93F9B9]",
                       )}
-                    </AnimatePresence>
-                    <span className="sr-only">Search</span>
-                  </Button>
-                </motion.div>
-
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10"
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#1D976C] to-[#93F9B9] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-[#1D976C]/40 ring-2 ring-[#111714]">
-                      3
-                    </span>
-                    <span className="sr-only">Cart</span>
-                  </Button>
-                </motion.div>
-
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-0.5 transition-all duration-300 outline-none">
-                      <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[#1D976C]/30 hover:ring-[#1D976C]/60 transition-all duration-300">
-                        <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
-                        <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold text-sm">
-                          {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent
-                      align="end"
-                      className="w-64 p-2 rounded-2xl border border-[rgba(255,255,255,0.06)] shadow-2xl shadow-black/50 bg-[#111714]/95 backdrop-blur-2xl"
                     >
-                      <div className="font-medium text-[#F1F5F2] px-3 py-2">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
-                            <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
-                            <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
-                              {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-semibold text-sm truncate max-w-[140px]">
-                              {user?.displayName || user?.email || "User"}
-                            </p>
-                            <p className="text-xs text-[#7D8983] truncate max-w-[140px]">
-                              {user?.email || "Premium Member"}
-                            </p>
+                      <AnimatePresence mode="wait" initial={false}>
+                        {isSearchOpen ? (
+                          <motion.span
+                            key="close"
+                            initial={{ opacity: 0, rotate: -90 }}
+                            animate={{ opacity: 1, rotate: 0 }}
+                            exit={{ opacity: 0, rotate: 90 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center justify-center"
+                          >
+                            <X className="w-5 h-5" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="search"
+                            initial={{ opacity: 0, rotate: 90 }}
+                            animate={{ opacity: 1, rotate: 0 }}
+                            exit={{ opacity: 0, rotate: -90 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center justify-center"
+                          >
+                            <Search className="w-5 h-5" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      <span className="sr-only">Search</span>
+                    </Button>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="relative rounded-xl hover:bg-[rgba(255,255,255,0.06)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 w-9 h-9 md:w-10 md:h-10"
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#1D976C] to-[#93F9B9] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-[#1D976C]/40 ring-2 ring-[#111714]">
+                        3
+                      </span>
+                      <span className="sr-only">Cart</span>
+                    </Button>
+                  </motion.div>
+
+                  {user ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-0.5 transition-all duration-300 outline-none">
+                        <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[#1D976C]/30 hover:ring-[#1D976C]/60 transition-all duration-300">
+                          <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                          <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold text-sm">
+                            {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent
+                        align="end"
+                        className="w-64 p-2 rounded-2xl border border-[rgba(255,255,255,0.06)] shadow-2xl shadow-black/50 bg-[#111714]/95 backdrop-blur-2xl"
+                      >
+                        <div className="font-medium text-[#F1F5F2] px-3 py-2">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
+                              <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                              <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
+                                {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-semibold text-sm truncate max-w-[140px]">
+                                {user?.displayName || user?.email || "User"}
+                              </p>
+                              <p className="text-xs text-[#7D8983] truncate max-w-[140px]">
+                                {user?.email || "Premium Member"}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
+                        <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                      {dashboardLinks.map((link) => (
-                        <DropdownMenuItem key={link.href}>
+                        {dashboardLinks.map((link) => (
+                          <DropdownMenuItem key={link.href}>
+                            <Link
+                              href={link.href}
+                              className="flex w-full items-center rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200"
+                            >
+                              <link.icon className="mr-2 h-4 w-4 text-[#1D976C]" />
+                              <span>{link.name}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+
+                        <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
+
+                        <DropdownMenuItem>
                           <Link
-                            href={link.href}
+                            href="/help"
                             className="flex w-full items-center rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200"
                           >
-                            <link.icon className="mr-2 h-4 w-4 text-[#1D976C]" />
-                            <span>{link.name}</span>
+                            <Headphones className="mr-2 h-4 w-4 text-[#1D976C]" />
+                            <span>Help & Support</span>
                           </Link>
                         </DropdownMenuItem>
-                      ))}
 
-                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
+                        <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
 
-                      <DropdownMenuItem>
-                        <Link
-                          href="/help"
-                          className="flex w-full items-center rounded-xl px-3 py-2.5 text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200"
+                        <DropdownMenuItem 
+                          onClick={handleLogout}
+                          className="cursor-pointer rounded-xl px-3 py-2.5 text-[#B85C5C] hover:bg-[#B85C5C]/10 transition-all duration-200"
                         >
-                          <Headphones className="mr-2 h-4 w-4 text-[#1D976C]" />
-                          <span>Help & Support</span>
-                        </Link>
-                      </DropdownMenuItem>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Logout</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <div className="flex items-center gap-1 md:gap-2">
+                      <Link href="/login">
+                        <Button
+                          variant="ghost"
+                          className="rounded-xl border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 h-9 md:h-10 px-3 md:px-4 text-sm"
+                        >
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link href="/register">
+                        <Button className="rounded-xl bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 md:h-10 px-3 md:px-4 text-sm shadow-lg shadow-[#1D976C]/30 hover:shadow-[#1D976C]/50 transition-all duration-300">
+                          Register
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
 
-                      <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
-
-                      <DropdownMenuItem 
-                        onClick={handleLogout}
-                        className="cursor-pointer rounded-xl px-3 py-2.5 text-[#B85C5C] hover:bg-[#B85C5C]/10 transition-all duration-200"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Logout</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <Link href="/login">
-                      <Button
-                        variant="ghost"
-                        className="rounded-xl border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] transition-all duration-300 h-9 md:h-10 px-3 md:px-4 text-sm"
-                      >
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link href="/register">
-                      <Button className="rounded-xl bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 md:h-10 px-3 md:px-4 text-sm shadow-lg shadow-[#1D976C]/30 hover:shadow-[#1D976C]/50 transition-all duration-300">
-                        Register
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-
-                <Sheet
-                  open={isMobileMenuOpen}
-                  onOpenChange={setIsMobileMenuOpen}
-                >
-                  <SheetTrigger className="lg:hidden cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-2 transition-all duration-300 outline-none">
-                    <Menu className="w-6 h-6 text-[#A9B5AF] hover:text-[#F1F5F2]" />
-                    <span className="sr-only">Open menu</span>
-                  </SheetTrigger>
-
-                  <SheetContent
-                    side="right"
-                    className="w-[320px] sm:w-[400px] p-0 bg-[#111714] border-l border-[rgba(255,255,255,0.06)]"
+                  <Sheet
+                    open={isMobileMenuOpen}
+                    onOpenChange={setIsMobileMenuOpen}
                   >
-                    <div className="flex flex-col h-full relative overflow-hidden">
-                      <div className="absolute inset-0 pointer-events-none">
-                        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-[#1D976C]/10 via-[#93F9B9]/5 to-transparent rounded-full blur-3xl" />
-                      </div>
+                    <SheetTrigger className="lg:hidden cursor-pointer rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-2 transition-all duration-300 outline-none">
+                      <Menu className="w-6 h-6 text-[#A9B5AF] hover:text-[#F1F5F2]" />
+                      <span className="sr-only">Open menu</span>
+                    </SheetTrigger>
 
-                      <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 relative z-10">
-                        <Link
-                          href="/"
-                          className="flex items-center gap-2.5"
-                          onClick={closeMobileMenu}
-                        >
-                          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1D976C] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/30">
-                            <Leaf className="w-5 h-5 text-[#111714]" />
-                          </div>
-                          <span className="text-xl font-extrabold tracking-tight">
-                            <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
-                              Agro
-                            </span>
-                            <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
-                              Care
-                            </span>
-                          </span>
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={closeMobileMenu}
-                          className="rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-2 transition-all duration-300 text-[#A9B5AF]"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
+                    <SheetContent
+                      side="right"
+                      className="w-[320px] sm:w-[400px] p-0 bg-[#111714] border-l border-[rgba(255,255,255,0.06)]"
+                    >
+                      <div className="flex flex-col h-full relative overflow-hidden">
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-bl from-[#1D976C]/10 via-[#93F9B9]/5 to-transparent rounded-full blur-3xl" />
+                        </div>
 
-                      <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10">
-                        {navLinks.map((link) => {
-                          const Icon = link.icon;
-                          const active = isActive(link.href);
-                          return (
+                        <div className="flex items-center justify-between p-6 border-b border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 relative z-10">
+                          <Link
+                            href="/"
+                            className="flex items-center gap-2.5"
+                            onClick={closeMobileMenu}
+                          >
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1D976C] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/30">
+                              <Leaf className="w-5 h-5 text-[#111714]" />
+                            </div>
+                            <span className="text-xl font-extrabold tracking-tight">
+                              <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
+                                Agro
+                              </span>
+                              <span className="bg-gradient-to-r from-[#93F9B9] via-[#4DCF9A] to-[#1D976C] bg-clip-text text-transparent">
+                                Care
+                              </span>
+                            </span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={closeMobileMenu}
+                            className="rounded-xl hover:bg-[rgba(255,255,255,0.06)] p-2 transition-all duration-300 text-[#A9B5AF]"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <nav className="flex-1 p-4 space-y-1 overflow-y-auto relative z-10">
+                          {navLinks.map((link) => {
+                            const Icon = link.icon;
+                            const active = isActive(link.href);
+                            return (
+                              <Link
+                                key={link.href}
+                                href={link.href}
+                                onClick={closeMobileMenu}
+                                className={cn(
+                                  "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300",
+                                  active
+                                    ? "bg-gradient-to-r from-[#1D976C]/20 to-[#93F9B9]/10 text-[#F1F5F2] border border-[rgba(255,255,255,0.06)] shadow-inner"
+                                    : "text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)]",
+                                )}
+                              >
+                                <Icon className="w-5 h-5" />
+                                {link.name}
+                              </Link>
+                            );
+                          })}
+
+                          <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
+
+                          <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#7D8983]">
+                            Dashboard
+                          </p>
+
+                          {dashboardLinks.map((link) => (
                             <Link
                               key={link.href}
                               href={link.href}
                               onClick={closeMobileMenu}
-                              className={cn(
-                                "flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300",
-                                active
-                                  ? "bg-gradient-to-r from-[#1D976C]/20 to-[#93F9B9]/10 text-[#F1F5F2] border border-[rgba(255,255,255,0.06)] shadow-inner"
-                                  : "text-[#A9B5AF] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)]",
-                              )}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
                             >
-                              <Icon className="w-5 h-5" />
+                              <link.icon className="w-5 h-5 text-[#1D976C]" />
                               {link.name}
                             </Link>
-                          );
-                        })}
+                          ))}
 
-                        <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
+                          <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
 
-                        <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-[#7D8983]">
-                          Dashboard
-                        </p>
-
-                        {dashboardLinks.map((link) => (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            onClick={closeMobileMenu}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
-                          >
-                            <link.icon className="w-5 h-5 text-[#1D976C]" />
-                            {link.name}
-                          </Link>
-                        ))}
-
-                        <div className="my-4 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
-
-                        <div className="space-y-1">
-                          <Link
-                            href="/help"
-                            onClick={closeMobileMenu}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
-                          >
-                            <Headphones className="w-5 h-5" />
-                            Help & Support
-                          </Link>
-                          <Link
-                            href="/about"
-                            onClick={closeMobileMenu}
-                            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
-                          >
-                            <Shield className="w-5 h-5" />
-                            About AgroCare
-                          </Link>
-                        </div>
-                      </nav>
-
-                      <div className="p-6 border-t border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 space-y-3 relative z-10">
-                        {user ? (
-                          <>
-                            <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.04)]">
-                              <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
-                                <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
-                                <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
-                                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm text-[#F1F5F2] truncate">
-                                  {user?.displayName || user?.email || "User"}
-                                </p>
-                                <p className="text-xs text-[#7D8983] truncate">
-                                  {user?.email || "Premium Member"}
-                                </p>
-                              </div>
-                            </div>
-                            <Button 
-                              onClick={handleLogout}
-                              className="w-full bg-[#B85C5C]/10 hover:bg-[#B85C5C]/20 text-[#B85C5C] font-medium rounded-xl transition-all duration-300 h-12 border border-[#B85C5C]/20"
+                          <div className="space-y-1">
+                            <Link
+                              href="/help"
+                              onClick={closeMobileMenu}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
                             >
-                              <LogOut className="w-4 h-4 mr-2" />
-                              Logout
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Link href="/login" onClick={closeMobileMenu}>
-                              <Button className="w-full border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] font-medium rounded-xl transition-all duration-300 h-12">
-                                <User className="w-4 h-4 mr-2" />
-                                Sign In
-                              </Button>
+                              <Headphones className="w-5 h-5" />
+                              Help & Support
                             </Link>
-                            <Link href="/register" onClick={closeMobileMenu}>
-                              <Button className="w-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold rounded-xl shadow-lg shadow-[#1D976C]/30 transition-all duration-300 h-12">
-                                Create Account
-                              </Button>
+                            <Link
+                              href="/about"
+                              onClick={closeMobileMenu}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-[#7D8983] hover:text-[#F1F5F2] hover:bg-[rgba(255,255,255,0.04)] transition-all duration-300"
+                            >
+                              <Shield className="w-5 h-5" />
+                              About AgroCare
                             </Link>
-                          </>
-                        )}
-                        <div className="flex items-center justify-center gap-3 pt-2">
-                          <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
-                            <Truck className="w-3.5 h-3.5 text-[#1D976C]" />
-                            Free Delivery
                           </div>
-                          <div className="w-px h-4 bg-[rgba(255,255,255,0.06)]" />
-                          <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
-                            <Award className="w-3.5 h-3.5 text-[#1D976C]" />
-                            100% Organic
+                        </nav>
+
+                        <div className="p-6 border-t border-[rgba(255,255,255,0.06)] bg-gradient-to-r from-[#1D976C]/5 to-[#93F9B9]/5 space-y-3 relative z-10">
+                          {user ? (
+                            <>
+                              <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.04)]">
+                                <Avatar className="h-10 w-10 ring-2 ring-[#1D976C]/30">
+                                  <AvatarImage src={user?.photoURL || "/avatar.jpg"} alt={user?.displayName || "User"} />
+                                  <AvatarFallback className="bg-gradient-to-br from-[#1D976C] to-[#93F9B9] text-[#111714] font-bold">
+                                    {user?.displayName?.charAt(0) || user?.email?.charAt(0) || "U"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-sm text-[#F1F5F2] truncate">
+                                    {user?.displayName || user?.email || "User"}
+                                  </p>
+                                  <p className="text-xs text-[#7D8983] truncate">
+                                    {user?.email || "Premium Member"}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button 
+                                onClick={handleLogout}
+                                className="w-full bg-[#B85C5C]/10 hover:bg-[#B85C5C]/20 text-[#B85C5C] font-medium rounded-xl transition-all duration-300 h-12 border border-[#B85C5C]/20"
+                              >
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Logout
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Link href="/login" onClick={closeMobileMenu}>
+                                <Button className="w-full border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-sm hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.25)] text-[#A9B5AF] hover:text-[#F1F5F2] font-medium rounded-xl transition-all duration-300 h-12">
+                                  <User className="w-4 h-4 mr-2" />
+                                  Sign In
+                                </Button>
+                              </Link>
+                              <Link href="/register" onClick={closeMobileMenu}>
+                                <Button className="w-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold rounded-xl shadow-lg shadow-[#1D976C]/30 transition-all duration-300 h-12">
+                                  Create Account
+                                </Button>
+                              </Link>
+                            </>
+                          )}
+                          <div className="flex items-center justify-center gap-3 pt-2">
+                            <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
+                              <Truck className="w-3.5 h-3.5 text-[#1D976C]" />
+                              Free Delivery
+                            </div>
+                            <div className="w-px h-4 bg-[rgba(255,255,255,0.06)]" />
+                            <div className="flex items-center gap-1.5 text-xs text-[#7D8983]">
+                              <Award className="w-3.5 h-3.5 text-[#1D976C]" />
+                              100% Organic
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                    </SheetContent>
+                  </Sheet>
+                </div>
               </div>
             </div>
-          </div>
 
-          <AnimatePresence>
-            {isSearchOpen && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 overflow-hidden border-t border-[rgba(255,255,255,0.06)]"
-              >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                  <div className="flex items-center gap-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 focus-within:border-[#1D976C]/50 transition-all duration-300">
-                    <Search className="w-4.5 h-4.5 text-[#93F9B9] shrink-0" />
-                    <input
-                      autoFocus
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSearchSubmit();
-                      }}
-                      placeholder="Search for seeds, fertilizer, tools, machinery..."
-                      className="flex-1 bg-transparent text-sm md:text-base text-[#F1F5F2] placeholder:text-[#7D8983] outline-none"
-                    />
-                    <Button
-                      onClick={handleSearchSubmit}
-                      className="rounded-lg bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 px-4 text-sm shrink-0"
-                    >
-                      Search
-                    </Button>
+            <AnimatePresence>
+              {isSearchOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative z-10 overflow-hidden border-t border-[rgba(255,255,255,0.06)]"
+                >
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center gap-3 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 focus-within:border-[#1D976C]/50 transition-all duration-300">
+                      <Search className="w-4.5 h-4.5 text-[#93F9B9] shrink-0" />
+                      <input
+                        autoFocus
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSearchSubmit();
+                        }}
+                        placeholder="Search for seeds, fertilizer, tools, machinery..."
+                        className="flex-1 bg-transparent text-sm md:text-base text-[#F1F5F2] placeholder:text-[#7D8983] outline-none"
+                      />
+                      <Button
+                        onClick={handleSearchSubmit}
+                        className="rounded-lg bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold h-9 px-4 text-sm shrink-0"
+                      >
+                        Search
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.header>
     </AnimatePresence>

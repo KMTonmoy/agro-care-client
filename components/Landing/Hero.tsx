@@ -1,424 +1,227 @@
-// components/Hero.tsx
 "use client";
-import { cn } from "@/lib/utils";
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import {
-  Leaf,
-  Truck,
-  Shield,
-  Star,
-  ArrowRight,
-  Play,
-  Users,
-  Award,
-  Clock,
-  Zap,
-  TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  Sprout,
-  Sun,
-  Droplets,
-} from "lucide-react";
-import Link from "next/link";
+
+import React, { useEffect, useState, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
-// Sample carousel images (replace with your actual images)
 const carouselImages = [
   {
     id: 1,
-    src: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop",
-    alt: "Fresh vegetables",
-    title: "Fresh Organic Produce",
+    src: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920&h=650&fit=crop",
+    alt: "Fresh organic vegetables",
   },
   {
     id: 2,
-    src: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop",
-    alt: "Farm landscape",
-    title: "Sustainable Farming",
+    src: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920&h=650&fit=crop",
+    alt: "Beautiful farm landscape",
   },
   {
     id: 3,
-    src: "https://images.unsplash.com/photo-1595853035070-59a39fe84de3?w=800&h=600&fit=crop",
-    alt: "Happy farmers",
-    title: "Empowering Farmers",
+    src: "https://images.unsplash.com/photo-1595853035070-59a39fe84de3?w=1920&h=650&fit=crop",
+    alt: "Happy farmers harvesting",
   },
   {
     id: 4,
-    src: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&h=600&fit=crop",
-    alt: "Organic products",
-    title: "Quality Products",
+    src: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=1920&h=650&fit=crop",
+    alt: "Organic farming products",
+  },
+  {
+    id: 5,
+    src: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=1920&h=650&fit=crop",
+    alt: "Agricultural field",
   },
 ];
 
-const Hero = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+const AUTOPLAY_MS = 5000;
 
-  // Auto-play carousel
+const slideVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 60 : -60,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? -60 : 60,
+  }),
+};
+
+const Hero = () => {
+  const [[currentSlide, direction], setSlide] = useState<[number, number]>([0, 1]);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const resumeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!isAutoPlaying) return;
+
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-    }, 5000);
+      setSlide(([prev]) => [(prev + 1) % carouselImages.length, 1]);
+    }, AUTOPLAY_MS);
+
     return () => clearInterval(interval);
   }, [isAutoPlaying]);
 
-  const nextSlide = () => {
+  const pauseAndResume = () => {
     setIsAutoPlaying(false);
-    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-    setTimeout(() => setIsAutoPlaying(true), 3000);
+    if (resumeTimeout.current) clearTimeout(resumeTimeout.current);
+    resumeTimeout.current = setTimeout(() => setIsAutoPlaying(true), 3000);
+  };
+
+  const nextSlide = () => {
+    setSlide(([prev]) => [(prev + 1) % carouselImages.length, 1]);
+    pauseAndResume();
   };
 
   const prevSlide = () => {
-    setIsAutoPlaying(false);
-    setCurrentSlide(
-      (prev) => (prev - 1 + carouselImages.length) % carouselImages.length,
-    );
-    setTimeout(() => setIsAutoPlaying(true), 3000);
+    setSlide(([prev]) => [
+      (prev - 1 + carouselImages.length) % carouselImages.length,
+      -1,
+    ]);
+    pauseAndResume();
   };
 
-  const stats = [
-    { icon: Users, label: "Happy Farmers", value: "500+" },
-    { icon: Star, label: "Customer Rating", value: "4.9" },
-    { icon: Award, label: "Organic Certified", value: "100%" },
-    { icon: Clock, label: "Delivery Time", value: "24/7" },
-  ];
-
-  const trustBadges = [
-    { icon: Shield, label: "100% Secure" },
-    { icon: Truck, label: "Free Delivery" },
-    { icon: Leaf, label: "100% Organic" },
-    { icon: TrendingUp, label: "Growing Community" },
-  ];
-
-  // Particle positions - fixed for hydration
-  const particlePositions = [
-    { top: "10%", left: "5%" },
-    { top: "20%", left: "85%" },
-    { top: "35%", left: "15%" },
-    { top: "50%", left: "75%" },
-    { top: "65%", left: "25%" },
-    { top: "80%", left: "90%" },
-    { top: "90%", left: "10%" },
-    { top: "15%", left: "45%" },
-    { top: "45%", left: "55%" },
-    { top: "70%", left: "40%" },
-    { top: "30%", left: "95%" },
-    { top: "85%", left: "60%" },
-    { top: "55%", left: "8%" },
-    { top: "5%", left: "65%" },
-    { top: "95%", left: "35%" },
-  ];
+  const goToSlide = (index: number) => {
+    setSlide(([prev]) => [index, index > prev ? 1 : -1]);
+    pauseAndResume();
+  };
 
   return (
-    <section className="relative pt-24 md:pt-28 overflow-hidden bg-[#111714]">
-      {/* HERO OUTER CONTAINER — SAME WIDTH AS NAVBAR */}
-      <div
-        className={cn(
-          "mx-4 md:mx-6 lg:mx-8",
-          "rounded-2xl md:rounded-3xl",
-          "overflow-hidden",
-          "relative",
-          "bg-[#111714]",
-          "border border-[rgba(255,255,255,0.06)]",
-          "shadow-[0_8px_40px_rgba(0,0,0,0.45)]",
-        )}
-      >
-        {/* ===== BACKGROUND EFFECTS ===== */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <section className="relative w-full bg-[#111714] px-3 sm:px-5 lg:px-8 xl:px-10 py-4 sm:py-6 lg:py-8">
+      <div className="relative w-full max-w-[1600px] mx-auto">
+        {/* Glow layer behind everything — soft ambient pulse */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-4 sm:-inset-6 rounded-[2rem] blur-2xl opacity-60"
+          style={{
+            background:
+              "radial-gradient(60% 60% at 50% 50%, rgba(147,249,185,0.35), rgba(29,151,108,0.15) 55%, transparent 80%)",
+          }}
+          animate={{ opacity: [0.35, 0.6, 0.35] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        {/* Rotating conic-gradient ring — the "glowing border" */}
+        <div className="relative rounded-2xl sm:rounded-3xl p-[1.5px] overflow-hidden">
           <motion.div
-            className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-[#1D976C]/15 via-[#93F9B9]/5 to-transparent rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.5, 0.8, 0.5],
+            aria-hidden
+            className="absolute inset-[-50%]"
+            style={{
+              background:
+                "conic-gradient(from 0deg, transparent 0%, #93F9B9 15%, #1D976C 30%, transparent 45%, transparent 100%)",
             }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
           />
 
-          <motion.div
-            className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-[#93F9B9]/10 via-[#1D976C]/5 to-transparent rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.4, 0.7, 0.4],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-          />
-
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,_rgba(29,151,108,0.06)_0%,_transparent_70%)] animate-pulse-slow" />
-
-          {particlePositions.map((pos, i) => (
+          <div className="relative p-2 sm:p-3 lg:p-4 rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#111714] shadow-[0_8px_40px_rgba(0,0,0,0.5)]">
             <motion.div
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-[#93F9B9]/15"
-              style={{
-                top: pos.top,
-                left: pos.left,
-              }}
+              className="relative w-full h-[500px] sm:h-[580px] lg:h-[650px] xl:h-[680px] overflow-hidden rounded-xl sm:rounded-2xl lg:rounded-3xl border border-white/[0.10] bg-[#111714] shadow-[inset_0_0_40px_rgba(0,0,0,0.4)]"
               animate={{
-                y: [0, -40, 0],
-                x: [0, 20, 0],
-                opacity: [0.1, 0.5, 0.1],
-                scale: [1, 1.3, 1],
+                boxShadow: [
+                  "inset 0 0 40px rgba(0,0,0,0.4), 0 0 0px rgba(147,249,185,0)",
+                  "inset 0 0 40px rgba(0,0,0,0.4), 0 0 30px rgba(147,249,185,0.35)",
+                  "inset 0 0 40px rgba(0,0,0,0.4), 0 0 0px rgba(147,249,185,0)",
+                ],
               }}
-              transition={{
-                duration: 5 + (i % 5) * 1.2,
-                repeat: Infinity,
-                delay: (i % 4) * 0.8,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-
-          <motion.div
-            className="absolute top-20 right-20 w-96 h-96 bg-[#1D976C]/10 rounded-full blur-3xl"
-            animate={{
-              y: [0, -30, 0],
-              x: [0, 20, 0],
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          <motion.div
-            className="absolute bottom-20 left-20 w-80 h-80 bg-[#93F9B9]/10 rounded-full blur-3xl"
-            animate={{
-              y: [0, 30, 0],
-              x: [0, -20, 0],
-            }}
-            transition={{
-              duration: 14,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2,
-            }}
-          />
-        </div>
-
-        {/* GRID */}
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] pointer-events-none" />
-
-        {/* ===== MAIN CONTENT ===== */}
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              {/* LEFT */}
-              <div className="space-y-6">
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  className="inline-flex items-center gap-2 bg-[#1D976C]/10 border border-[#1D976C]/20 rounded-full px-4 py-1.5"
+                  key={carouselImages[currentSlide].id}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="absolute inset-0"
                 >
-                  <Zap className="w-4 h-4 text-[#93F9B9]" />
+                  <Image
+                    src={carouselImages[currentSlide].src}
+                    alt={carouselImages[currentSlide].alt}
+                    fill
+                    priority={currentSlide === 0}
+                    sizes="100vw"
+                    className="object-cover"
+                  />
 
-                  <span className="text-xs font-medium text-[#93F9B9] tracking-wider uppercase">
-                    Smart Farming 2026
-                  </span>
-
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#93F9B9] animate-pulse ml-1" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/10" />
                 </motion.div>
+              </AnimatePresence>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.2 }}
-                  className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1]"
-                >
-                  <span className="text-[#F1F5F2]">Grow with</span>
+              <motion.button
+                type="button"
+                onClick={prevSlide}
+                aria-label="Previous slide"
+                whileHover={{ scale: 1.1, boxShadow: "0 0 25px rgba(29,151,108,0.4)" }}
+                whileTap={{ scale: 0.92 }}
+                className="absolute left-4 sm:left-6 lg:left-8 xl:left-10 top-1/2 -translate-y-1/2 z-20 flex h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 items-center justify-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur-xl shadow-lg transition-colors duration-300 hover:bg-black/55 hover:border-[#93F9B9]/40"
+              >
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+              </motion.button>
 
-                  <br />
+              <motion.button
+                type="button"
+                onClick={nextSlide}
+                aria-label="Next slide"
+                whileHover={{ scale: 1.1, boxShadow: "0 0 25px rgba(29,151,108,0.4)" }}
+                whileTap={{ scale: 0.92 }}
+                className="absolute right-4 sm:right-6 lg:right-8 xl:right-10 top-1/2 -translate-y-1/2 z-20 flex h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 items-center justify-center rounded-full border border-white/15 bg-black/35 text-white backdrop-blur-xl shadow-lg transition-colors duration-300 hover:bg-black/55 hover:border-[#93F9B9]/40"
+              >
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+              </motion.button>
 
-                  <span className="bg-gradient-to-r from-[#1D976C] via-[#4DCF9A] to-[#93F9B9] bg-clip-text text-transparent">
-                    AgroCare
-                  </span>
-                </motion.h1>
+              <motion.div
+                key={`counter-${currentSlide}`}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="absolute top-5 sm:top-7 lg:top-8 right-5 sm:right-7 lg:right-8 z-20 rounded-full border border-white/15 bg-black/35 px-3 py-1.5 text-xs sm:text-sm font-medium text-white/90 backdrop-blur-xl shadow-lg"
+              >
+                {String(currentSlide + 1).padStart(2, "0")} /{" "}
+                {String(carouselImages.length).padStart(2, "0")}
+              </motion.div>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.3 }}
-                  className="text-lg text-[#A9B5AF] max-w-lg leading-relaxed"
-                >
-                  Empowering farmers and feeding communities with quality
-                  agricultural products, expert guidance, and sustainable
-                  farming solutions.
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.4 }}
-                  className="flex flex-wrap gap-4"
-                >
-                  <Link href="/shop">
-                    <Button className="bg-gradient-to-r from-[#1D976C] to-[#93F9B9] hover:from-[#167A56] hover:to-[#1D976C] text-[#111714] font-semibold px-8 py-6 text-lg rounded-2xl shadow-lg shadow-[#1D976C]/30 hover:shadow-[#1D976C]/50 transition-all duration-300 hover:scale-105 group">
-                      Start Shopping
-                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-
-                  <Link href="/about">
-                    <Button
-                      variant="outline"
-                      className="border-[rgba(255,255,255,0.15)] hover:border-[#1D976C] text-[#F1F5F2] hover:text-[#93F9B9] hover:bg-[#1D976C]/10 px-8 py-6 text-lg rounded-2xl transition-all duration-300"
-                    >
-                      <Play className="mr-2 w-5 h-5" />
-                      Watch Story
-                    </Button>
-                  </Link>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.5 }}
-                  className="grid grid-cols-2 sm:grid-cols-4 gap-3"
-                >
-                  {stats.map((stat, idx) => (
-                    <div
-                      key={idx}
-                      className="glass rounded-xl p-3 text-center border-[rgba(255,255,255,0.04)] hover:border-[rgba(255,255,255,0.08)] transition-all duration-300"
-                    >
-                      <stat.icon className="w-4 h-4 text-[#93F9B9] mx-auto mb-1" />
-
-                      <div className="text-lg font-bold text-[#F1F5F2]">
-                        {stat.value}
-                      </div>
-
-                      <div className="text-[10px] text-[#A9B5AF]">
-                        {stat.label}
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.7, delay: 0.6 }}
-                  className="flex flex-wrap items-center gap-3 text-[#7D8983]"
-                >
-                  {trustBadges.map((badge, idx) => (
-                    <React.Fragment key={idx}>
-                      <div className="flex items-center gap-1.5">
-                        <badge.icon className="w-3.5 h-3.5 text-[#1D976C]" />
-                        <span className="text-xs">{badge.label}</span>
-                      </div>
-
-                      {idx < trustBadges.length - 1 && (
-                        <div className="w-px h-4 bg-[rgba(255,255,255,0.06)]" />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </motion.div>
+              <div className="absolute bottom-5 sm:bottom-7 lg:bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-full border border-white/10 bg-black/30 px-3 py-2 backdrop-blur-xl shadow-lg">
+                {carouselImages.map((image, index) => (
+                  <button
+                    key={image.id}
+                    type="button"
+                    onClick={() => goToSlide(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                    className="relative h-1.5 overflow-hidden rounded-full transition-all duration-300"
+                  >
+                    <motion.span
+                      className="block h-1.5 rounded-full bg-white/40"
+                      animate={{ width: index === currentSlide ? 36 : 10 }}
+                      transition={{ duration: 0.35, ease: "easeOut" }}
+                    />
+                    {index === currentSlide && (
+                      <motion.span
+                        layoutId="active-dot-glow"
+                        className="absolute inset-0 rounded-full bg-gradient-to-r from-[#1D976C] to-[#93F9B9] shadow-[0_0_10px_rgba(147,249,185,0.6)]"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
 
-              {/* RIGHT CAROUSEL */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-                className="relative"
-              >
-                <div className="glass rounded-3xl overflow-hidden border-[rgba(255,255,255,0.06)] relative aspect-[4/3]">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentSlide}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.5 }}
-                      className="w-full h-full relative"
-                    >
-                      <Image
-                        src={carouselImages[currentSlide].src}
-                        alt={carouselImages[currentSlide].alt}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
+              <div className="pointer-events-none absolute inset-0 z-30 rounded-xl sm:rounded-2xl lg:rounded-3xl border border-white/[0.04]" />
+            </motion.div>
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#111714]/60 via-transparent to-transparent" />
-
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-white text-sm font-medium">
-                          {carouselImages[currentSlide].title}
-                        </p>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-
-                  <button
-                    type="button"
-                    onClick={prevSlide}
-                    aria-label="Previous slide"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#111714]/60 backdrop-blur-sm border border-[rgba(255,255,255,0.1)] hover:bg-[#111714]/80 transition-all duration-300 flex items-center justify-center text-white hover:scale-110"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={nextSlide}
-                    aria-label="Next slide"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#111714]/60 backdrop-blur-sm border border-[rgba(255,255,255,0.1)] hover:bg-[#111714]/80 transition-all duration-300 flex items-center justify-center text-white hover:scale-110"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-
-                  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {carouselImages.map((_, idx) => (
-                      <button
-                        type="button"
-                        key={idx}
-                        aria-label={`Go to slide ${idx + 1}`}
-                        onClick={() => {
-                          setIsAutoPlaying(false);
-                          setCurrentSlide(idx);
-
-                          setTimeout(() => {
-                            setIsAutoPlaying(true);
-                          }, 3000);
-                        }}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          idx === currentSlide
-                            ? "w-6 bg-[#93F9B9]"
-                            : "bg-[rgba(255,255,255,0.3)] hover:bg-[rgba(255,255,255,0.5)]"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#111714]/60 backdrop-blur-sm border border-[rgba(255,255,255,0.1)] text-xs text-[#A9B5AF]">
-                    {currentSlide + 1} / {carouselImages.length}
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-[#1D976C]/10 rounded-full blur-2xl pointer-events-none" />
-
-                <div className="absolute -top-4 -right-4 w-32 h-32 bg-[#93F9B9]/10 rounded-full blur-2xl pointer-events-none" />
-              </motion.div>
-            </div>
+            <div className="pointer-events-none absolute inset-1 sm:inset-2 lg:inset-3 rounded-xl sm:rounded-2xl border border-[#93F9B9]/10" />
+            <div className="pointer-events-none absolute inset-0 rounded-2xl sm:rounded-3xl border border-white/[0.025]" />
           </div>
         </div>
-
-        {/* Bottom gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.06)] to-transparent" />
       </div>
     </section>
   );
