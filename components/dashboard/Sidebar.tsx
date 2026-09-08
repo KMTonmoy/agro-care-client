@@ -47,18 +47,18 @@ const userLinks = [
 
 const adminLinks = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "My Orders", href: "/dashboard/orders", icon: ClipboardList },
   { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
-  { name: "Admin Panel", href: "/admin", icon: Shield },
-  { name: "Manage Products", href: "/admin/products", icon: Package },
-  { name: "Manage Orders", href: "/admin/orders", icon: ClipboardList },
-  { name: "Manage Users", href: "/admin/users", icon: Users },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart },
-  { name: "Reports", href: "/admin/reports", icon: FileText },
-  { name: "Inventory", href: "/admin/inventory", icon: Store },
-  { name: "Messages", href: "/admin/messages", icon: MessageCircle },
-  { name: "Calendar", href: "/admin/calendar", icon: Calendar },
+  { name: "Banner Management", href: "/dashboard/admin/banner", icon: Leaf },
+  { name: "Admin Panel", href: "/dashboard/admin", icon: Shield },
+  { name: "Manage Products", href: "/dashboard/admin/products", icon: Package },
+  { name: "Manage Orders", href: "/dashboard/admin/orders", icon: ClipboardList },
+  { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
+  { name: "Analytics", href: "/dashboard/admin/analytics", icon: BarChart },
+  { name: "Reports", href: "/dashboard/admin/reports", icon: FileText },
+  { name: "Inventory", href: "/dashboard/admin/inventory", icon: Store },
+  { name: "Messages", href: "/dashboard/admin/messages", icon: MessageCircle },
+  { name: "Calendar", href: "/dashboard/admin/calendar", icon: Calendar },
 ];
 
 export const Sidebar = ({
@@ -89,7 +89,6 @@ export const Sidebar = ({
     setIsCollapsed(!isCollapsed);
   };
 
-  // Get user info from userData or Firebase
   const getUserName = () => {
     if (userData?.name) return userData.name;
     if (firebaseUser?.displayName) return firebaseUser.displayName;
@@ -139,7 +138,6 @@ export const Sidebar = ({
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Logo */}
         <div className={cn(
           "flex items-center h-16 px-4 border-b border-[rgba(255,255,255,0.06)]",
           isCollapsed ? "justify-center" : "justify-between"
@@ -169,7 +167,6 @@ export const Sidebar = ({
           )}
         </div>
 
-        {/* User Profile */}
         <div className={cn(
           "p-4 border-b border-[rgba(255,255,255,0.06)]",
           isCollapsed ? "flex justify-center" : ""
@@ -202,7 +199,6 @@ export const Sidebar = ({
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {links.map((link) => {
             const Icon = link.icon;
@@ -233,7 +229,6 @@ export const Sidebar = ({
           })}
         </nav>
 
-        {/* Bottom Section */}
         <div className="p-3 border-t border-[rgba(255,255,255,0.06)] space-y-1">
           <Link
             href="/help"
