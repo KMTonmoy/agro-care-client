@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/useUser";
 
 const Profile = () => {
-  const { user, loading } = useUser();
+  const { userData, loading } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -163,7 +163,7 @@ const Profile = () => {
           <div className="relative group">
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#1D976C] to-[#93F9B9] flex items-center justify-center shadow-lg shadow-[#1D976C]/30">
               <span className="text-3xl font-bold text-[#111714]">
-                {user?.name?.charAt(0) || "U"}
+                {userData?.name?.charAt(0) || "U"}
               </span>
             </div>
             <button
@@ -179,15 +179,15 @@ const Profile = () => {
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3">
               <h3 className="text-2xl font-bold text-[#F1F5F2]">
-                {user?.name || "User"}
+                {userData?.name || "User"}
               </h3>
-              {user?.role === "admin" && (
+              {userData?.role === "admin" && (
                 <span className="text-xs font-medium text-[#93F9B9] bg-[#1D976C]/20 px-3 py-1 rounded-full flex items-center gap-1">
                   <Shield className="w-3 h-3" />
                   Admin
                 </span>
               )}
-              {user?.isVerified && (
+              {userData?.isVerified && (
                 <span className="text-xs font-medium text-green-400 bg-green-400/10 px-3 py-1 rounded-full flex items-center gap-1">
                   <CheckCircle className="w-3 h-3" />
                   Verified
@@ -196,11 +196,11 @@ const Profile = () => {
             </div>
             <p className="text-[#A9B5AF] mt-1 flex items-center gap-2">
               <Mail className="w-4 h-4 text-[#7D8983]" />
-              {user?.email || "No email"}
+              {userData?.email || "No email"}
             </p>
             <p className="text-[#7D8983] mt-0.5 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#7D8983]" />
-              Joined {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+              Joined {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}
             </p>
           </div>
 
@@ -260,7 +260,7 @@ const Profile = () => {
                 <input
                   type="text"
                   name="name"
-                  value={formData.name || user?.name || ""}
+                  value={formData.name || userData?.name || ""}
                   onChange={handleChange}
                   className="w-full rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none focus:border-[#1D976C]/40 transition-all duration-300"
                   placeholder="Enter your name"
@@ -274,7 +274,7 @@ const Profile = () => {
                 <input
                   type="email"
                   name="email"
-                  value={formData.email || user?.email || ""}
+                  value={formData.email || userData?.email || ""}
                   onChange={handleChange}
                   className="w-full rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none focus:border-[#1D976C]/40 transition-all duration-300"
                   placeholder="Enter your email"
@@ -288,7 +288,7 @@ const Profile = () => {
                 <input
                   type="tel"
                   name="phone"
-                  value={formData.phone || user?.phone || ""}
+                  value={formData.phone || userData?.phone || ""}
                   onChange={handleChange}
                   className="w-full rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] px-4 py-2.5 text-sm text-[#F1F5F2] placeholder-[#52635B] outline-none focus:border-[#1D976C]/40 transition-all duration-300"
                   placeholder="Enter your phone number"
