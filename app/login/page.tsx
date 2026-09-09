@@ -153,7 +153,7 @@ const Login = () => {
         method: loginMethod,
       };
 
-      const response = await axios.post('http://localhost:8000/send-otp', payload);
+      const response = await axios.post(' https://agrocare-server.vercel.app/send-otp', payload);
 
       if (response.data.success) {
         setIsOtpSent(true);
@@ -191,7 +191,7 @@ const Login = () => {
         method: loginMethod,
       };
 
-      const response = await axios.post('http://localhost:8000/verify-otp', payload);
+      const response = await axios.post(' https://agrocare-server.vercel.app/verify-otp', payload);
 
       if (response.data.success) {
         setOtpSuccess('OTP verified successfully!');
@@ -215,7 +215,7 @@ const Login = () => {
         method: loginMethod,
       };
 
-      const response = await axios.post('http://localhost:8000/login', payload);
+      const response = await axios.post(' https://agrocare-server.vercel.app/login', payload);
 
       if (response.data.success) {
         setSuccess(true);
@@ -257,7 +257,7 @@ const Login = () => {
         method: loginMethod,
       };
 
-      const response = await axios.post('http://localhost:8000/resend-otp', payload);
+      const response = await axios.post(' https://agrocare-server.vercel.app/resend-otp', payload);
 
       if (response.data.success) {
         setOtpSuccess('OTP resent successfully!');

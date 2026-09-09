@@ -1,24 +1,26 @@
 import axios from 'axios';
 
-interface ImgBBResponse {
-  data: {
-    display_url: string;
-    id: string;
-    title: string;
-    url: string;
-    delete_url: string;
-  };
-  success: boolean;
-  status: number;
+interface CloudinaryResponse {
+  secure_url: string;
+  url: string;
+  public_id: string;
+  asset_id: string;
+  format: string;
+  width: number;
+  height: number;
 }
+
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!;
 
 export const imageUpload = async (image: File): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('image', image);
+    formData.append('file', image);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-    const { data } = await axios.post<ImgBBResponse>(
-      'https://api.imgbb.com/1/upload?key=19c9072b07556f7849d6dea75b7e834d',
+    const { data } = await axios.post<CloudinaryResponse>(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData,
       {
         headers: {
@@ -27,8 +29,8 @@ export const imageUpload = async (image: File): Promise<string> => {
       }
     );
 
-    if (data.success) {
-      return data.data.display_url;
+    if (data.secure_url) {
+      return data.secure_url;
     } else {
       throw new Error('Image upload failed');
     }

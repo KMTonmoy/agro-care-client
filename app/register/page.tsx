@@ -199,7 +199,7 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const response = await axios.post<OTPResponse>('http://localhost:8000/api/auth/send-otp', {
+      const response = await axios.post<OTPResponse>(' https://agrocare-server.vercel.app/api/auth/send-otp', {
         contact: formData.email,
         method: 'email',
       });
@@ -246,7 +246,7 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const response = await axios.post<VerifyOTPResponse>('http://localhost:8000/api/auth/verify-otp', {
+      const response = await axios.post<VerifyOTPResponse>(' https://agrocare-server.vercel.app/api/auth/verify-otp', {
         contact: formData.email,
         otp: otpInput,
         method: 'email',
@@ -302,7 +302,7 @@ const Register = () => {
     setOtpSuccess('');
 
     try {
-      const response = await axios.post<OTPResponse>('http://localhost:8000/api/auth/send-otp', {
+      const response = await axios.post<OTPResponse>(' https://agrocare-server.vercel.app/api/auth/send-otp', {
         contact: formData.email,
         method: 'email',
       });

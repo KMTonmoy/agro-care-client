@@ -102,7 +102,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       // 1. First, register the user in your backend
-      const response = await axios.post('http://localhost:8000/api/auth/register', {
+      const response = await axios.post(' https://agrocare-server.vercel.app/api/auth/register', {
         name,
         email,
         password,
@@ -157,7 +157,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         firebaseUid: user?.uid || '',
       };
 
-      const response = await axios.put('http://localhost:8000/api/user', userData);
+      const response = await axios.put(' https://agrocare-server.vercel.app/api/user', userData);
       console.log('✅ User saved to MongoDB:', response.data);
       return response.data;
     } catch (error) {
@@ -217,7 +217,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Send OTP (Custom - via your backend)
   const sendOTP = async (contact: string, method: 'email' | 'phone') => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/send-otp', {
+      const response = await axios.post(' https://agrocare-server.vercel.app/api/auth/send-otp', {
         contact,
         method,
       });
@@ -237,7 +237,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Verify OTP (Custom - via your backend)
   const verifyOTP = async (contact: string, otp: string, method: 'email' | 'phone') => {
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/verify-otp', {
+      const response = await axios.post(' https://agrocare-server.vercel.app/api/auth/verify-otp', {
         contact,
         otp,
         method,
@@ -355,7 +355,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logOut = async () => {
     setLoading(true);
     try {
-      await axios.get('http://localhost:8000/api/auth/logout', {
+      await axios.get(' https://agrocare-server.vercel.app/api/auth/logout', {
         withCredentials: true,
       });
       await signOut(auth);

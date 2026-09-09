@@ -48,7 +48,7 @@ export const useUser = (): UseUserReturn => {
         const email = encodeURIComponent(user.email);
 
         const response = await axios.get(
-          `http://localhost:8000/api/user/email/${email}`
+          ` https://agrocare-server.vercel.app/api/user/email/${email}`
         );
 
         if (response.data?.success) {
